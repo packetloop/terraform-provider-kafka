@@ -1,1 +1,1 @@
-# terraform-provider-kafka
+# terraform kafka provider
