@@ -25,6 +25,27 @@ func(info *KafkaTopicInfo) exists() bool {
   return info != nil && info.PartitionsCount > 0 && info.ReplicationFactor > 0
 }
 
+func (client *KafkaManagingClient) deleteTopic(name string) error {
+  cmd := exec.Command(
+    client.TopicScript,
+    "--zookeeper", client.Zookeeper,
+    "--delete", "--topic", name)
+
+  out, err := cmd.Output()
+  if err != nil {
+    kafkaError := readError(string(out))
+    if (kafkaError != nil) { return kafkaError }
+    return err
+  }
+
+  strOut := strings.TrimSpace(string(out))
+  if strings.Contains(strOut, "marked for deletion") {
+    return nil
+  }
+
+  return fmt.Errorf("Was not able to confirm that topic %s was marked for deletion. Something is wrong", name)
+}
+
 func (client *KafkaManagingClient) createTopic(name string, partitions int, replicas int) (*KafkaTopicInfo, error) {
   cmd := exec.Command(
     client.TopicScript,
@@ -101,56 +122,6 @@ func readTopicInfo(txt string) (*KafkaTopicInfo, error) {
   }
 
   return info, nil
-}
-
-
-func createRequest(id string, config interface{}) error {
-  // TODO POST to api with payload
-  return nil
-}
-
-func createDeploy(id string, config interface{}) error {
-  // TODO POST to api with payload
-  return nil
-}
-
-func getRequest(id string, meta interface{}) error {
-  // TODO GET to api, parse response into request/deploy objects and return
-  return nil
-}
-
-func waitForRequest(id string, status string, meta interface{}) error {
-
-  activeState := false
-
-  // TODO actually parse response and compare status
-
-  // var endpoint = meta.(*Conf).endpoint + "/requests/request/" + id
-
-  for activeState == false {
-    // res, err := http.Get(endpoint)
-
-    // if err != nil {
-    //  return err
-    // }
-
-    // defer r.Body.Close()
-    // decoder := json.NewDecoder(res.Body)
-
-    // activeState = *res.Table.TableStatus == "ACTIVE"
-
-    // // Wait for a few seconds
-    // if !activeState {
-    //  log.Printf("[DEBUG] Sleeping for 5 seconds for table to become active")
-    //  time.Sleep(5 * time.Second)
-    // }
-  }
-
-  return nil
-}
-
-func deleteRequest(id string, meta interface{}) error {
-  return nil
 }
 
 

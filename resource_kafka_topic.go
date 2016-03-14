@@ -93,10 +93,10 @@ func resourceKafkaTopicRead(d *schema.ResourceData, meta interface{}) error {
 
 
 func resourceKafkaTopicDelete(d *schema.ResourceData, meta interface{}) error {
-  
-  log.Printf("[DEBUG] Deleting Kafka On Demand '%s'", d.Id())
-  
-  // perform delete
+  topicName := d.Get("name").(string)
+  log.Printf("[DEBUG] Kafka to delete topic '%s' [%s]", topicName, d.Id())
 
-  return nil
+  client := meta.(*KafkaManagingClient)
+
+  return client.deleteTopic(topicName)
 }
