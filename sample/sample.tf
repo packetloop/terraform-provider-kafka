@@ -1,8 +1,10 @@
+provider "kafka" {
+  zookeeper = "localhost"
+  kafka_bin_path = "/Users/alexey/Work/kafka/bin"
+}
 
-resource "kafka_on_demand" "TestOnDemand" {
-  id = "something_cool"
-  retries = 5
-  cpus = 0.5
-  memory = 1024
-  image = "arbornetworks-docker-docker.bintray.io/aws-cli_0.2.0:18da34d"
+resource "kafka_topic" "test7" {
+  name = "test8"
+  partitions = 3
+  replication_factor = 1
 }
