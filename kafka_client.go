@@ -1,11 +1,13 @@
 package main
 
 import (
+  "log"
   "os/exec"
   "regexp"
   "strconv"
   "strings"
   "fmt"
+  "github.com/hashicorp/consul/vendor/github.com/fsouza/go-dockerclient/external/github.com/Sirupsen/logrus"
 )
 
 // Client does client stuff.
@@ -19,22 +21,61 @@ type KafkaTopicInfo struct {
   ReplicationFactor int
 }
 
-func (client *KafkaManagingClient) describeTopic(name string) (*KafkaTopicInfo, error) {
-  cmd := exec.Command(client.TopicScript, "--zookeeper", client.Zookeeper, "--describe", "--topic", name)
+func(info *KafkaTopicInfo) exists() bool {
+  return info != nil && info.PartitionsCount > 0 && info.ReplicationFactor > 0
+}
+
+func (client *KafkaManagingClient) createTopic(name string, partitions int, replicas int) (*KafkaTopicInfo, error) {
+  cmd := exec.Command(
+    client.TopicScript,
+    "--zookeeper", client.Zookeeper,
+    "--create", "--topic", name,
+    "--partitions", strconv.Itoa(partitions),
+    "--replication-factor", strconv.Itoa(replicas))
+
   out, err := cmd.Output()
 
   if err != nil {
+    kafkaError := readError(string(out))
+    if (kafkaError != nil) { return nil, kafkaError }
     return nil, err
   }
 
-  strOut := strings.TrimSpace(string(out[:len(out)]))
+  strOut := strings.TrimSpace(string(out))
+  logrus.Info(strOut)
+  log.Println(strOut)
 
-  if strOut == "" {
-    return nil, fmt.Errorf("Cannot describe topic, maybe not found: " + name)
+  if strOut == fmt.Sprintf("Created topic \"%s\".", name) {
+    res := &KafkaTopicInfo{
+      PartitionsCount: partitions,
+      ReplicationFactor: replicas,
+    }
+    return res, nil
   }
 
+  return nil, fmt.Errorf("Unable to parse results from kafka, there is maybe something wrong: %s", strOut)
+}
+
+func (client *KafkaManagingClient) describeTopic(name string) (*KafkaTopicInfo, error) {
+  cmd := exec.Command(client.TopicScript, "--zookeeper", client.Zookeeper, "--describe", "--topic", name)
+
+  out, err := cmd.Output()
+  if err != nil { return nil, err }
+
+  strOut := strings.TrimSpace(string(out[:len(out)]))
+
+  //does not exist
+  if strOut == "" { return nil, nil }
 
   return readTopicInfo(strOut)
+}
+
+func readError(txt string) error {
+  errorR, _ := regexp.Compile("^Error .+")
+  err := strings.TrimSpace(errorR.FindString(txt))
+
+  if err == "" { return nil }
+  return fmt.Errorf("%s", err)
 }
 
 func readTopicInfo(txt string) (*KafkaTopicInfo, error) {
