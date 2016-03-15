@@ -28,6 +28,7 @@ func resourceKafkaTopic() *schema.Resource {
       "replication_factor": &schema.Schema{
         Type:        schema.TypeInt,
         Required:    true,
+        ForceNew:    true,
         Description: "replication factor",
       },
       "retention_bytes": &schema.Schema{
@@ -75,12 +76,22 @@ func resourceKafkaTopicCreate(d *schema.ResourceData, meta interface{}) error {
 }
 
 func resourceKafkaTopicUpdate(d *schema.ResourceData, meta interface{}) error {
-  
-  log.Printf("[DEBUG] Updating Kafka On Demand '%s'", d.Id())
-  
-  // if request changed, recreate request
+  topicName := d.Get("name").(string)
+  log.Printf("[DEBUG] Kafka topic to update '%s' [%s]", topicName, d.Id())
 
-  // if deploy changed, do a new deploy
+  client := meta.(*KafkaManagingClient)
+
+  if d.HasChange("partitions") {
+    if pcErr := client.alterTopicPartitions(topicName, d.Get("partitions").(int)); pcErr != nil {
+      return pcErr
+    }
+  }
+
+  if d.HasChange("cleanup_policy") || d.HasChange("retention_bytes") || d.HasChange("retention_ms") {
+    if ccErr := client.alterTopicConfig(topicName, buildKafkaConfig(d)); ccErr != nil {
+      return ccErr
+    }
+  }
 
   return nil
 }

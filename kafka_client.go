@@ -7,48 +7,41 @@ import (
   "strconv"
   "strings"
   "fmt"
-  "github.com/hashicorp/consul/vendor/github.com/fsouza/go-dockerclient/external/github.com/Sirupsen/logrus"
 )
 
 // Client does client stuff.
 type KafkaManagingClient struct {
   Zookeeper   string
   TopicScript string
+  ConfigScript string
 }
 
-type KafkaTopicInfo struct {
-  PartitionsCount int
-  ReplicationFactor int
-  CleanupPolicy string
-  RetentionBytes int64
-  RetentionMs int64
+func (client *KafkaManagingClient) alterTopicPartitions(name string, partitions int) error {
+  log.Printf("Update partitions count for topic '%s' to %d", name, partitions)
+  cmd := exec.Command(
+    client.TopicScript,
+    "--zookeeper", client.Zookeeper,
+    "--alter", "--topic", name,
+    "--partitions", strconv.Itoa(partitions))
+
+  return execKafkaCommand(cmd, "Adding partitions succeeded")
 }
 
-func appendConf(slice []string, name string, value string) []string {
-  return append(slice, "--config", name + "=" + value)
-}
-
-func(conf *KafkaTopicInfo) kafkaTopicConfigOpts() []string {
-  var parms = []string{}
-  if (conf.CleanupPolicy != "") { parms = appendConf(parms, "cleanup.policy", conf.CleanupPolicy ) }
-  if (conf.RetentionBytes > -1) { parms = appendConf(parms, "retention.bytes", strconv.FormatInt(conf.RetentionBytes, 10))}
-  if (conf.RetentionMs > -1)    { parms = appendConf(parms, "retention.ms", strconv.FormatInt(conf.RetentionMs, 10))}
-
-  return parms
-}
-
-func(info *KafkaTopicInfo) exists() bool {
-  return info != nil && info.PartitionsCount > 0 && info.ReplicationFactor > 0
-}
-
-func newKafkaTopicInfo(partitions int, replicas int) *KafkaTopicInfo {
-  return &KafkaTopicInfo{
-    PartitionsCount:   partitions,
-    ReplicationFactor: replicas,
-    CleanupPolicy:     "",
-    RetentionBytes:    -1,
-    RetentionMs:       -1,
+func (client *KafkaManagingClient) alterTopicConfig(name string, conf *KafkaTopicInfo) error {
+  var params = []string {
+    "--zookeeper", client.Zookeeper,
+    "--entity-type", "topics",
+    "--entity-name", name,
+    "--alter",
   }
+
+  confOpts := conf.alterTopicConfigOpts()
+  params = append(params, confOpts...)
+
+  log.Printf("Will update configs for topic %s: %v", name, confOpts)
+  cmd := exec.Command(client.ConfigScript, params...)
+
+  return execKafkaCommand(cmd, "Updated config for topic:")
 }
 
 func (client *KafkaManagingClient) deleteTopic(name string) error {
@@ -57,19 +50,7 @@ func (client *KafkaManagingClient) deleteTopic(name string) error {
     "--zookeeper", client.Zookeeper,
     "--delete", "--topic", name)
 
-  out, err := cmd.Output()
-  if err != nil {
-    kafkaError := readError(string(out))
-    if (kafkaError != nil) { return kafkaError }
-    return err
-  }
-
-  strOut := strings.TrimSpace(string(out))
-  if strings.Contains(strOut, "marked for deletion") {
-    return nil
-  }
-
-  return fmt.Errorf("Was not able to confirm that topic %s was marked for deletion. Something is wrong", name)
+  return execKafkaCommand(cmd, "marked for deletion")
 }
 
 func (client *KafkaManagingClient) createTopic(name string, conf *KafkaTopicInfo) error {
@@ -80,15 +61,12 @@ func (client *KafkaManagingClient) createTopic(name string, conf *KafkaTopicInfo
     "--replication-factor", strconv.Itoa(conf.ReplicationFactor),
   }
 
-  confOpts := conf.kafkaTopicConfigOpts()
+  confOpts := conf.createTopicConfigOpts()
   params = append(params, confOpts...)
 
   log.Println("[DEBUG] Will execute %v", params)
 
-  cmd := exec.Command(
-    client.TopicScript,
-    params...
-    )
+  cmd := exec.Command(client.TopicScript, params...)
 
   out, err := cmd.Output()
 
@@ -99,9 +77,6 @@ func (client *KafkaManagingClient) createTopic(name string, conf *KafkaTopicInfo
   }
 
   strOut := strings.TrimSpace(string(out))
-  logrus.Info(strOut)
-  log.Println(strOut)
-
   if strOut == fmt.Sprintf("Created topic \"%s\".", name) {
     return nil
   }
@@ -124,7 +99,7 @@ func (client *KafkaManagingClient) describeTopic(name string) (*KafkaTopicInfo, 
 }
 
 func readError(txt string) error {
-  errorR, _ := regexp.Compile("^Error .+")
+  errorR, _ := regexp.Compile("(?m:^Error .+)")
   err := strings.TrimSpace(errorR.FindString(txt))
 
   if err == "" { return nil }
@@ -166,6 +141,22 @@ func readTopicInfo(txt string) (*KafkaTopicInfo, error) {
   }
 
   return info, nil
+}
+
+func execKafkaCommand(cmd *exec.Cmd, successIfPresent string) error {
+  out, err := cmd.Output()
+  if err != nil {
+    kafkaError := readError(string(out))
+    if (kafkaError != nil) { return kafkaError }
+    return err
+  }
+
+  strOut := strings.TrimSpace(string(out))
+  if strings.Contains(strOut, successIfPresent) {
+    return nil
+  }
+
+  return fmt.Errorf("Unable to execute command '%v': %s", cmd.Args, strOut)
 }
 
 func getOrDefaultStr(m map[string]string, key string, def string) string {

@@ -38,14 +38,24 @@ func Provider() terraform.ResourceProvider {
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
   var client = new(KafkaManagingClient)
   client.Zookeeper = d.Get("zookeeper").(string)
-  script := "kafka-topics.sh"
+  topicScript  := "kafka-topics.sh"
+  configScript := "kafka-configs.sh"
   if v := d.Get("kafka_bin_path").(string); v != "" {
-    script = v + "/" + script
+    topicScript = v + "/" + topicScript
+    configScript = v + "/" + configScript
   }
 
-  if _, err := os.Stat(script); os.IsNotExist(err) {
-    return nil, fmt.Errorf("Unable to find Kafka scripts: %s not found", script)
-  }
-  client.TopicScript = script
+  if err := ensureScriptExists(topicScript);  err != nil { return nil, err }
+  if err := ensureScriptExists(configScript); err != nil { return nil, err }
+
+  client.TopicScript  = topicScript
+  client.ConfigScript = configScript
   return client, nil
+}
+
+func ensureScriptExists(path string) error {
+  if _, err := os.Stat(path); os.IsNotExist(err) {
+    return fmt.Errorf("Unable to find Kafka scripts: %s not found", path)
+  }
+  return nil
 }
