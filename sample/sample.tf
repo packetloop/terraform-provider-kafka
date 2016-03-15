@@ -4,9 +4,9 @@ provider "kafka" {
 }
 
 resource "kafka_topic" "my-test" {
-  name = "test12"
-  partitions = 3
+  name = "my-test"
+  partitions = 2
   replication_factor = 1
-  retention_ms = 86000
+  retention_ms = 300000
   cleanup_policy = "compact"
 }
