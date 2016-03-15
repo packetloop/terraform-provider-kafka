@@ -30,6 +30,24 @@ func resourceKafkaTopic() *schema.Resource {
         Required:    true,
         Description: "replication factor",
       },
+      "retention_bytes": &schema.Schema{
+        Type:        schema.TypeInt,
+        Optional:    true,
+        Description: "log.retention.bytes",
+        Default:     -1,
+      },
+      "retention_ms": &schema.Schema{
+        Type:        schema.TypeInt,
+        Optional:    true,
+        Description: "log.retention.ms",
+        Default:     -1,
+      },
+      "cleanup_policy": &schema.Schema{
+        Type:        schema.TypeString,
+        Optional:    true,
+        Description: "cleanup.policy",
+        Default:     "",
+      },
     },
   }
 }
@@ -38,17 +56,17 @@ func resourceKafkaTopicCreate(d *schema.ResourceData, meta interface{}) error {
   client := meta.(*KafkaManagingClient)
 
   topicName  := d.Get("name").(string)
-  partitions := d.Get("partitions").(int)
-  replicas   := d.Get("replication_factor").(int)
 
   log.Printf("[DEBUG] Kafka to create topic '%s'", topicName)
 
+  conf := buildKafkaConfig(d)
+
   d.SetId(topicName)
 
-  res, err := client.createTopic(topicName, partitions, replicas)
+  err := client.createTopic(topicName, conf)
 
   if (err == nil) {
-    log.Printf("[DEBUG] Kafka topic '%s:%d:%d' created ", topicName, res.PartitionsCount, res.ReplicationFactor)
+    log.Printf("[DEBUG] Kafka topic '%s:%d:%d' created ", topicName, conf.PartitionsCount, conf.ReplicationFactor)
   } else {
     log.Printf("[DEBUG] Kafka - unable to create topic: %v", err)
   }
@@ -87,6 +105,9 @@ func resourceKafkaTopicRead(d *schema.ResourceData, meta interface{}) error {
   d.Set("name", topicName)
   d.Set("partitions", info.PartitionsCount)
   d.Set("replication_factor", info.ReplicationFactor)
+  d.Set("cleanup_policy", info.CleanupPolicy)
+  d.Set("retention_bytes", info.RetentionBytes)
+  d.Set("retention_ms", info.RetentionMs)
 
   return nil
 }
@@ -99,4 +120,14 @@ func resourceKafkaTopicDelete(d *schema.ResourceData, meta interface{}) error {
   client := meta.(*KafkaManagingClient)
 
   return client.deleteTopic(topicName)
+}
+
+func buildKafkaConfig(d *schema.ResourceData) *KafkaTopicInfo {
+  return &KafkaTopicInfo{
+    PartitionsCount:   d.Get("partitions").(int),
+    ReplicationFactor: d.Get("replication_factor").(int),
+    CleanupPolicy:     d.Get("cleanup_policy").(string),
+    RetentionBytes:    int64(d.Get("retention_bytes").(int)),
+    RetentionMs:       int64(d.Get("retention_ms").(int)),
+  }
 }

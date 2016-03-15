@@ -20,7 +20,8 @@ Topic: file-imported	Partition: 9	Leader: -1	Replicas: 0	Isr:
 Topic: file-imported	Partition: 10	Leader: -1	Replicas: 0	Isr:
 Topic: file-imported	Partition: 11	Leader: -1	Replicas: 0	Isr:`
 
-	shortDescribeResponse = "Topic:file-imported	PartitionCount:12	ReplicationFactor:3	Configs:"
+	shortDescribeResponse  = "Topic:file-imported	PartitionCount:12	ReplicationFactor:3	Configs:retention.ms=1457999337,cleanup.policy=compact"
+	shortDescribeResponse2 = "Topic:file-imported	PartitionCount:12	ReplicationFactor:3	Configs:retention.bytes=1023"
 
 	emptyDescribeResponse = ""
 
@@ -50,15 +51,47 @@ Topic: file-imported	Partition: 11	Leader: -1	Replicas: 0	Isr:`
 func TestKafkaManagingClient_topicInfo(t *testing.T) {
   res, err := readTopicInfo(validDescribeResponse)
   if err != nil { t.Fatal(err) }
-  if res.PartitionsCount != 12 { t.Errorf("expected PartitionsCount to be %d, but got %d", 12, res.PartitionsCount) }
-  if res.ReplicationFactor != 3 { t.Errorf("expected ReplicationFactor to be %d, but got %d", 3, res.ReplicationFactor) }
+  assertInt   (t, "PartitionsCount",   res.PartitionsCount,   12)
+  assertInt   (t, "ReplicationFactor", res.ReplicationFactor, 3 )
+  assertInt64 (t, "RetentionBytes",    res.RetentionBytes,    -1)
+  assertInt64 (t, "RetentionMs",       res.RetentionMs,       -1)
+  assertString(t, "CleanupPolicy",     res.CleanupPolicy,     "")
 }
 
 func TestKafkaManagingClient_shortTopicInfo(t *testing.T) {
-  res, err := readTopicInfo(shortDescribeResponse)
+  var res, err = readTopicInfo(shortDescribeResponse)
   if err != nil { t.Fatal(err) }
-  if res.PartitionsCount != 12 { t.Errorf("expected PartitionsCount to be %d, but got %d", 12, res.PartitionsCount) }
-  if res.ReplicationFactor != 3 { t.Errorf("expected ReplicationFactor to be %d, but got %d", 3, res.ReplicationFactor) }
+  assertInt   (t, "PartitionsCount",   res.PartitionsCount,   12)
+  assertInt   (t, "ReplicationFactor", res.ReplicationFactor, 3 )
+  assertInt64 (t, "RetentionBytes",    res.RetentionBytes,    -1)
+  assertInt64 (t, "RetentionMs",       res.RetentionMs,       1457999337)
+  assertString(t, "CleanupPolicy",     res.CleanupPolicy,     "compact")
+
+  res, err = readTopicInfo(shortDescribeResponse2)
+  if err != nil { t.Fatal(err) }
+  assertInt   (t, "PartitionsCount",   res.PartitionsCount,   12)
+  assertInt   (t, "ReplicationFactor", res.ReplicationFactor, 3 )
+  assertInt64 (t, "RetentionBytes",    res.RetentionBytes,    1023)
+  assertInt64 (t, "RetentionMs",       res.RetentionMs,       -1)
+  assertString(t, "CleanupPolicy",     res.CleanupPolicy,     "")
+}
+
+func assertInt(t *testing.T, name string, value int, expected int) {
+  if (expected != value) {
+    t.Errorf("expected %s to be %d, but got %d", name, expected, value)
+  }
+}
+
+func assertInt64(t *testing.T, name string, value int64, expected int64) {
+  if (expected != value) {
+    t.Errorf("expected %s to be %d, but got %d", name, expected, value)
+  }
+}
+
+func assertString(t *testing.T, name string, value string, expected string) {
+  if (expected != value) {
+    t.Errorf("expected %s to be %s, but got %s", name, expected, value)
+  }
 }
 
 func TestKafkaManagingClient_emptyTopicInfo(t *testing.T) {

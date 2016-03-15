@@ -3,6 +3,8 @@ package main
 import (
   "github.com/hashicorp/terraform/helper/schema"
   "github.com/hashicorp/terraform/terraform"
+  "os"
+  "fmt"
 )
 
 // Provider returns a terraform.ResourceProvider.
@@ -39,6 +41,10 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
   script := "kafka-topics.sh"
   if v := d.Get("kafka_bin_path").(string); v != "" {
     script = v + "/" + script
+  }
+
+  if _, err := os.Stat(script); os.IsNotExist(err) {
+    return nil, fmt.Errorf("Unable to find Kafka scripts: %s not found", script)
   }
   client.TopicScript = script
   return client, nil
