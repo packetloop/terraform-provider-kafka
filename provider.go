@@ -1,6 +1,8 @@
 package main
 
 import (
+  "os/exec"
+  "strings"
   "github.com/hashicorp/terraform/helper/schema"
   "github.com/hashicorp/terraform/terraform"
   "os"
@@ -17,7 +19,7 @@ func Provider() terraform.ResourceProvider {
         Required:    false,
         Optional:    true,
         Default:     "",
-        Description: providerName + " Custom path to /bin/kafka-topics.sh",
+        Description: providerName + " Custom path to Kafka executables",
       },
       "zookeeper": &schema.Schema{
         Type:        schema.TypeString,
@@ -36,20 +38,18 @@ func Provider() terraform.ResourceProvider {
 
 
 func providerConfigure(d *schema.ResourceData) (interface{}, error) {
-  var client = new(KafkaManagingClient)
+  client := new(KafkaManagingClient)
+  prefixPath := d.Get("kafka_bin_path").(string)
+  var err error
+
+  client.TopicScript, err  = scriptPath(prefixPath, "kafka-topics", "kafka-topics.sh")
+  if err != nil { return nil, err }
+
+  client.ConfigScript, err = scriptPath(prefixPath, "kafka-configs", "kafka-configs.sh")
+  if err != nil { return nil, err }
+
   client.Zookeeper = d.Get("zookeeper").(string)
-  topicScript  := "kafka-topics.sh"
-  configScript := "kafka-configs.sh"
-  if v := d.Get("kafka_bin_path").(string); v != "" {
-    topicScript = v + "/" + topicScript
-    configScript = v + "/" + configScript
-  }
 
-  if err := ensureScriptExists(topicScript);  err != nil { return nil, err }
-  if err := ensureScriptExists(configScript); err != nil { return nil, err }
-
-  client.TopicScript  = topicScript
-  client.ConfigScript = configScript
   return client, nil
 }
 
@@ -58,4 +58,35 @@ func ensureScriptExists(path string) error {
     return fmt.Errorf("Unable to find Kafka scripts: %s not found", path)
   }
   return nil
+}
+
+func scriptPath(prefixPath string, scriptNames ... string) (string, error) {
+  if prefixPath != "" {
+    for _, scriptName := range scriptNames {
+      scriptPath, err := which(prefixPath + "/" + scriptName)
+      if err == nil { return scriptPath, nil }
+    }
+    
+    return "", fmt.Errorf("None of these scripts exist %s in %s", scriptNames, prefixPath)
+  }
+
+  for _, scriptName := range scriptNames {
+    scriptPath, err := which(scriptName)
+    if err == nil { return scriptPath, nil }
+  }
+
+  return "", fmt.Errorf("None of these scripts exist %s", scriptNames)
+}
+
+func which(executables ... string) (string, error) {
+  for _, executable := range executables {
+    cmd := exec.Command("which", executable)
+    
+    buffer, err := cmd.Output(); if err != nil { continue }
+    fullPath := strings.TrimSpace(fmt.Sprintf("%s", buffer)); if fullPath == "" { continue }
+    
+    return fullPath, nil
+  }
+  
+  return "", fmt.Errorf("None of these executables exist %s", executables)
 }
