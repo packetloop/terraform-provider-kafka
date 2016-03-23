@@ -9,7 +9,7 @@ import (
   "fmt"
 )
 
-// Client does client stuff.
+// KafkaManagingClient does client stuff.
 type KafkaManagingClient struct {
   Zookeeper   string
   TopicScript string
@@ -64,7 +64,7 @@ func (client *KafkaManagingClient) createTopic(name string, conf *KafkaTopicInfo
   confOpts := conf.createTopicConfigOpts()
   params = append(params, confOpts...)
 
-  log.Println("[DEBUG] Will execute %v", params)
+  log.Printf("[DEBUG] Will execute %v", params)
 
   cmd := exec.Command(client.TopicScript, params...)
 
@@ -170,4 +170,3 @@ func getOrDefaultInt(m map[string]string, key string, def int64) int64 {
   }
   return def
 }
-
