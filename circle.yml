@@ -10,3 +10,29 @@ machine:
 dependencies:
   cache_directories:
     - ~/download
+
+deployment:
+  release:
+    tag: /release-.*/
+    commands:
+      - go get github.com/mitchellh/gox
+      - go get github.com/tcnksm/ghr
+      - |
+        gox -osarch="netbsd/arm" \
+            -osarch="freebsd/amd64" \
+            -osarch="darwin/386" \
+            -osarch="darwin/amd64" \
+            -osarch="linux/386" \
+            -osarch="linux/amd64" \
+            -osarch="linux/arm" \
+            -osarch="freebsd/386" \
+            -osarch="openbsd/386" \
+            -osarch="openbsd/amd64" \
+            -osarch="netbsd/386" \
+            -osarch="freebsd/arm" \
+            -osarch="netbsd/amd64" \
+            -ldflags="-X main.Version=$(git describe --tags | cut -d - -f 2) -X main.BuildDate=$BUILD_DATE" \
+            -output="dist/ncd_{{.OS}}_{{.Arch}}"
+      - |
+        ghr -u $CIRCLE_PROJECT_USERNAME -t $GITHUB_TOKEN -r $CIRCLE_PROJECT_REPONAME \
+            --replace $(git describe --tags | cut -d - -f 2) dist/
