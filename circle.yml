@@ -13,7 +13,7 @@ dependencies:
 
 deployment:
   release:
-    tag: /release-.*/
+    tag: /v.*/
     commands:
       - go get github.com/mitchellh/gox
       - go get github.com/tcnksm/ghr
@@ -31,7 +31,7 @@ deployment:
             -osarch="netbsd/386" \
             -osarch="freebsd/arm" \
             -osarch="netbsd/amd64" \
-            -ldflags="-X main.Version=$(echo $CIRCLE_TAG | sed 's/^release-//g') -X main.BuildDate=$BUILD_DATE" \
+            -ldflags="-X main.Version=$(echo $CIRCLE_TAG | sed 's/^v//g') -X main.BuildDate=$BUILD_DATE" \
             -output="dist/${CIRCLE_PROJECT_REPONAME}.{{.OS}}_{{.Arch}}.bin"
       - |
         for x in dist/*.bin; do
