@@ -32,3 +32,39 @@ $ terraform apply
 - `retention_bytes` - the retention bytes for the topic
 - `retention_ms` - the retention period in milliseconds for the topic
 - `cleanup_policy` - the clean up policy for the topic, for example compaction
+
+## Manual testing in docker-compose
+
+### Prerequisites
+
+This requires that `docker-machine` is installed.  On OS X, this can be done with:
+
+```
+$ brew install docker-machine
+$ brew install docker-compose
+```
+
+### Test steps
+
+In one terminal run:
+
+```
+1$ cd sample/
+1$ docker-compose up
+```
+
+Then in another terminal run:
+
+```
+2$ cd sample/
+2$ docker exec -ti sample_kafka_1 /usr/bin/kafka-topics --list --zookeeper 192.168.99.100:2181
+```
+
+There should be no topics
+
+```
+2$ terraform apply
+2$ docker exec -ti sample_kafka_1 /usr/bin/kafka-topics --list --zookeeper 192.168.99.100:2181
+```
+
+There should be a new topic `my-topic`.

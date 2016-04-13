@@ -1,5 +1,5 @@
 provider "kafka" {
-  zookeeper = "localhost"
+  zookeeper = "192.168.99.100"
 }
 
 resource "kafka_topic" "my-topic" {

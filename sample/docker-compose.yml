@@ -1,0 +1,22 @@
+version: '2'
+services:
+  zookeeper:
+    image: confluent/zookeeper
+    hostname: zookeeper
+    ports:
+      - 2181:2181
+    environment:
+      SERVICE_NAME: zookeeper
+
+  kafka:
+    image: confluent/kafka
+    hostname: kafka
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_HOST_NAME: 192.168.99.100
+      KAFKA_ADVERTISED_PORT: 9092
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+    ports:
+      - 9092:9092
+    links:
+      - zookeeper:zookeeper
