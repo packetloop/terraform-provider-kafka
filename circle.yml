@@ -11,7 +11,9 @@ machine:
 dependencies:
   cache_directories:
     - ~/download
+    - ~/.apt-cache
   pre:
+    - sudo rm -rf /var/cache/apt/archives && sudo ln -s ~/.apt-cache /var/cache/apt/archives && mkdir -p ~/.apt-cache/partial
     - sudo add-apt-repository ppa:masterminds/glide -y
     - sudo apt-get update
     - sudo apt-get install glide -y
