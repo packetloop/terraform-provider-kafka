@@ -11,6 +11,7 @@ dependencies:
   cache_directories:
     - ~/download
   pre:
+    - sudo mkdir -p ~/.go_workspace/src
     - sudo add-apt-repository ppa:masterminds/glide -y
     - sudo apt-get update
     - sudo apt-get install glide -y
