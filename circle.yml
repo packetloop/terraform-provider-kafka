@@ -2,6 +2,7 @@ machine:
   environment:
     GODIST: "go1.6.linux-amd64.tar.gz"
     IMPORT_PATH: "github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME"
+    PROJECT_DIR: "/home/ubuntu/.go_workspace/src/$IMPORT_PATH"
 
   post:
     - mkdir -p download
@@ -19,13 +20,12 @@ dependencies:
     - sudo apt-get install glide -y
   override:
     - glide install
-    - mkdir -p "/home/ubuntu/.go_workspace/src/$IMPORT_PATH"
-    - rsync -azC --delete ./ "/home/ubuntu/.go_workspace/src/$IMPORT_PATH/"
-    
+    - mkdir -p "$PROJECT_DIR"
+    - rsync -azC --delete ./ "$PROJECT_DIR"
 
 test:
   override:
-    - go test -cover $(glide nv)
+    -   cd "$PROJECT_DIR" && go test -cover $(glide nv)
 
 deployment:
   release:
@@ -34,6 +34,7 @@ deployment:
       - go get github.com/mitchellh/gox
       - go get github.com/tcnksm/ghr
       - |
+        cd "$PROJECT_DIR" && \
         gox -osarch="netbsd/arm" \
             -osarch="freebsd/amd64" \
             -osarch="darwin/386" \
