@@ -35,6 +35,10 @@ $ terraform apply
 - `segment_bytes` - the segment file size for the log
 - `segement_ms` - the time after which Kafka will force the log to roll
 
+## Building
+
+This project uses the [glide](https://github.com/Masterminds/glide) package manager.
+
 ## Manual testing in docker-compose
 
 ### Prerequisites
