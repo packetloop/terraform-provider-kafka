@@ -1,0 +1,8 @@
+package: github.com/oliverdaff/terraform-provider-kafka
+import:
+- package: github.com/hashicorp/terraform
+  version: 0.6.16
+  subpackages:
+  - helper/schema
+  - plugin
+  - terraform
