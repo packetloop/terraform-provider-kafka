@@ -21,7 +21,7 @@ dependencies:
   override:
     - glide install
     - mkdir -p "$PROJECT_DIR"
-    - rsync -azC --delete ./ "$PROJECT_DIR"
+    - rsync -az --delete ./ "$PROJECT_DIR"
 
 test:
   override:
@@ -36,18 +36,6 @@ deployment:
       - |
         cd "$PROJECT_DIR" && \
         gox -osarch="netbsd/arm" \
-            -osarch="freebsd/amd64" \
-            -osarch="darwin/386" \
-            -osarch="darwin/amd64" \
-            -osarch="linux/386" \
-            -osarch="linux/amd64" \
-            -osarch="linux/arm" \
-            -osarch="freebsd/386" \
-            -osarch="openbsd/386" \
-            -osarch="openbsd/amd64" \
-            -osarch="netbsd/386" \
-            -osarch="freebsd/arm" \
-            -osarch="netbsd/amd64" \
             -ldflags="-X main.Version=$(echo $CIRCLE_TAG | sed 's/^v//g') -X main.BuildDate=$BUILD_DATE" \
             -output="dist/${CIRCLE_PROJECT_REPONAME}.{{.OS}}_{{.Arch}}.bin"
       - |
