@@ -38,6 +38,15 @@ $ terraform apply
 ## Building
 
 This project uses the [glide](https://github.com/Masterminds/glide) package manager.
+The package manger allows control of versions of dependencies used, including terraform.
+
+Glide can be installed with the homebrew package manager.
+
+The project dependencies can be installed with
+
+```
+glide install
+```
 
 ## Manual testing in docker-compose
 
