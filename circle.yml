@@ -56,5 +56,5 @@ deployment:
           gzip $x
         done
       - |
-        cd "PROJECT_DIR" && ghr -u $CIRCLE_PROJECT_USERNAME -t $GITHUB_TOKEN -r $CIRCLE_PROJECT_REPONAME \
+        cd "$PROJECT_DIR" && ghr -u $CIRCLE_PROJECT_USERNAME -t $GITHUB_TOKEN -r $CIRCLE_PROJECT_REPONAME \
             --replace $CIRCLE_TAG dist/
