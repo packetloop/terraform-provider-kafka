@@ -15,7 +15,7 @@ dependencies:
     - sudo add-apt-repository ppa:masterminds/glide -y
     - sudo apt-get update
     - sudo apt-get install glide -y
-    - cd "$GOPATH/src/$IMPORT_PATH" && glide install
+    - glide install
 
 deployment:
   release:
