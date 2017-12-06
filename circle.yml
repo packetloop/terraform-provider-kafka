@@ -18,6 +18,7 @@ dependencies:
     - sudo add-apt-repository ppa:masterminds/glide -y
     - sudo apt-get update
     - sudo apt-get install glide -y
+    - go get github.com/tcnksm/ghr
   override:
     - glide install
     - sudo mkdir -p "$PROJECT_DIR"
@@ -32,7 +33,6 @@ deployment:
     tag: /v.*/
     commands:
       - go get github.com/mitchellh/gox
-      - go get github.com/tcnksm/ghr
       - |
         cd "$PROJECT_DIR" && \
         gox -osarch="netbsd/arm" \
