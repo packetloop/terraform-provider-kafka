@@ -6,3 +6,8 @@ import:
   - helper/schema
   - plugin
   - terraform
+- package: github.com/tcnksm/ghr
+  version: 0.4.0
+- package: github.com/mitchellh/gox
+  version: 0.4.0
+
