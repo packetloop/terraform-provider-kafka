@@ -41,7 +41,7 @@ func (client *KafkaManagingClient) alterTopicConfig(name string, conf *KafkaTopi
 	log.Printf("Will update configs for topic %s: %v", name, confOpts)
 	cmd := exec.Command(client.ConfigScript, params...)
 
-	return execKafkaCommand(cmd, "Updated config for topic:")
+	return execKafkaCommand(cmd, "Completed Updating config for entity: topic")
 }
 
 func (client *KafkaManagingClient) deleteTopic(name string) error {
