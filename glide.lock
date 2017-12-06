@@ -1,5 +1,5 @@
-hash: 8662dd9e02e27be2fd790577444e920faee936a17b487c38b88ef735483b3ad4
-updated: 2016-10-05T15:57:26.87129871+10:00
+hash: cf755f90d56cdc56612b86eb60e01f46d5df2e2d2c78a5c3cab36c1b39d9cd3d
+updated: 2017-12-06T16:13:26.26698637+10:00
 imports:
 - name: github.com/apparentlymart/go-cidr
   version: a3ebdb999b831ecb6ab8a226e31b07b2b9061c47
@@ -118,8 +118,12 @@ imports:
   version: 80adcec1955ee4e97af357c30dee61aadcc02c10
 - name: github.com/mitchellh/go-homedir
   version: d682a8f0cf139663a984ff12528da460ca963de9
+- name: github.com/mitchellh/gox
+  version: c9740af9c6574448fd48eb30a71f964014c7a837
 - name: github.com/mitchellh/mapstructure
   version: 281073eb9eb092240d33ef253c404f1cca550309
 - name: github.com/mitchellh/reflectwalk
   version: eecf4c70c626c7cfbb95c90195bc34d386c74ac6
+- name: github.com/tcnksm/ghr
+  version: 74b0ef1bea6bdc603c2a4bc77ce83b30775e3699
 testImports: []
