@@ -31,7 +31,6 @@ deployment:
   release:
     tag: /v.*/
     commands:
-      - go get github.com/mitchellh/gox
       - |
         cd "$PROJECT_DIR" && \
         gox -osarch="netbsd/arm" \
