@@ -7,17 +7,17 @@ machine:
   post:
     - mkdir -p download
     - test -e download/$GODIST || curl -o download/$GODIST https://storage.googleapis.com/golang/$GODIST
-    - sudo rm -rf /usr/local/go
-    - sudo tar -C /usr/local -xzf download/$GODIST
+    - rm -rf /usr/local/go
+    - tar -C /usr/local -xzf download/$GODIST
 
 dependencies:
   cache_directories:
     - ~/download
   pre:
-    - sudo mkdir -p ~/.go_workspace/src
-    - sudo add-apt-repository ppa:masterminds/glide -y
-    - sudo apt-get update
-    - sudo apt-get install glide -y
+    - mkdir -p ~/.go_workspace/src
+    - add-apt-repository ppa:masterminds/glide -y
+    - apt-get update
+    - apt-get install glide -y
   override:
     - glide install
     - mkdir -p "$PROJECT_DIR"
