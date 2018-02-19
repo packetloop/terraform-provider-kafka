@@ -148,12 +148,19 @@ func resourceKafkaTopicDelete(d *schema.ResourceData, meta interface{}) error {
 
 func buildKafkaConfig(d *schema.ResourceData) *KafkaTopicInfo {
 	return &KafkaTopicInfo{
-		PartitionsCount:   d.Get("partitions").(int),
-		ReplicationFactor: d.Get("replication_factor").(int),
-		CleanupPolicy:     d.Get("cleanup_policy").(string),
-		RetentionBytes:    int64(d.Get("retention_bytes").(int)),
-		RetentionMs:       int64(d.Get("retention_ms").(int)),
-		SegmentBytes:      int64(d.Get("segment_bytes").(int)),
-		SegmentMs:         int64(d.Get("segment_ms").(int)),
+		PartitionsCount:          d.Get("partitions").(int),
+		ReplicationFactor:        d.Get("replication_factor").(int),
+		CleanupPolicy:            d.Get("cleanup_policy").(string),
+		RetentionBytes:           int64(d.Get("retention_bytes").(int)),
+		RetentionMs:              int64(d.Get("retention_ms").(int)),
+		SegmentBytes:             int64(d.Get("segment_bytes").(int)),
+		SegmentMs:                int64(d.Get("segment_ms").(int)),
+		PartitionsCountChanged:   d.HasChange("partitions"),
+		ReplicationFactorChanged: d.HasChange("replication_factor"),
+		CleanupPolicyChanged:     d.HasChange("cleanup_policy"),
+		RetentionBytesChanged:    d.HasChange("retention_bytes"),
+		RetentionMsChanged:       d.HasChange("retention_ms"),
+		SegmentBytesChanged:      d.HasChange("segment_bytes"),
+		SegmentMsChanged:         d.HasChange("segment_ms"),
 	}
 }

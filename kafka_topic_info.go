@@ -10,43 +10,89 @@ type KafkaTopicInfo struct {
 	RetentionMs       int64
 	SegmentBytes      int64
 	SegmentMs         int64
+	PartitionsCountChanged   bool
+	ReplicationFactorChanged bool
+	CleanupPolicyChanged     bool
+	RetentionBytesChanged    bool
+	RetentionMsChanged       bool
+	SegmentBytesChanged      bool
+	SegmentMsChanged         bool
+}
+
+type ConfMods struct {
+	ConfDeletions map[string]string
+	ConfAdditions map[string]string
 }
 
 func appendConf(slice []string, name string, value string) []string {
 	return append(slice, "--config", name+"="+value)
 }
 
-func addConf(slice []string, name string, value string) []string {
-	return append(slice, "--add-config", name+"="+value)
-}
-
-func removeConf(slice []string, name string) []string {
-	return append(slice, "--delete-config", name)
-}
-
-func setConf(slice []string, name string, value string, nullValue string) []string {
-	if nullValue == value {
-		return removeConf(slice, name)
-	} else {
-		return addConf(slice, name, value)
+func setConf(confMods ConfMods, name string, changed bool, value string, nullValue string) {
+	if changed {
+		if nullValue == value {
+			confMods.ConfDeletions[name] = value
+		} else {
+			confMods.ConfAdditions[name] = value
+		}
 	}
 }
 
-func setConfInt(slice []string, name string, value int, nullValue int) []string {
-	return setConf(slice, name, strconv.Itoa(value), strconv.Itoa(nullValue))
+func setConfInt(confMods ConfMods, name string, changed bool, value int, nullValue int) {
+	setConf(confMods, name, changed, strconv.Itoa(value), strconv.Itoa(nullValue))
 }
 
-func setConfInt64(slice []string, name string, value int64, nullValue int64) []string {
-	return setConf(slice, name, strconv.FormatInt(value, 10), strconv.FormatInt(nullValue, 10))
+func setConfInt64(confMods ConfMods, name string, changed bool, value int64, nullValue int64) {
+	setConf(confMods, name, changed, strconv.FormatInt(value, 10), strconv.FormatInt(nullValue, 10))
+}
+
+func makeConfMods() ConfMods {
+	confMods := ConfMods {
+		ConfDeletions: make(map[string]string),
+		ConfAdditions: make(map[string]string)}
+
+	return confMods
+}
+
+func writeConfMods(slice []string, conf *ConfMods) []string {
+	if (len(conf.ConfAdditions) > 0) {
+		arg := ""
+		delim := ""
+
+		for k, v := range conf.ConfAdditions {
+			arg += delim + k + "=" + v
+			delim = ","
+		}
+
+		slice = append(slice, "--add-config")
+		slice = append(slice, arg)
+	}
+
+	for k, _ := range conf.ConfDeletions {
+		slice = append(slice, "--delete-config", k)
+	}
+
+	return slice
 }
 
 func (conf *KafkaTopicInfo) alterTopicConfigOpts() []string {
 	var parms = []string{}
-	parms = setConf(parms, "cleanup.policy", conf.CleanupPolicy, "")
-	parms = setConfInt64(parms, "retention.bytes", conf.RetentionBytes, -1)
-	parms = setConfInt64(parms, "retention.ms", conf.RetentionMs, -1)
-	parms = setConfInt64(parms, "segment.bytes", conf.SegmentBytes, -1)
-	parms = setConfInt64(parms, "segment.ms", conf.SegmentMs, -1)
+
+	confMods := ConfMods {
+		ConfDeletions: make(map[string]string),
+		ConfAdditions: make(map[string]string)}
+
+	setConf     (confMods, "cleanup.policy" , conf.CleanupPolicyChanged, 	conf.CleanupPolicy  , "")
+	setConfInt64(confMods, "retention.bytes", conf.RetentionBytesChanged,	conf.RetentionBytes , -1)
+	setConfInt64(confMods, "retention.ms"   , conf.RetentionMsChanged,   	conf.RetentionMs    , -1)
+	setConfInt64(confMods, "retention.ms"   , conf.RetentionMsChanged,   	conf.RetentionMs    , -1)
+	setConfInt64(confMods, "segment.bytes"  , conf.SegmentBytesChanged,  	conf.SegmentBytes   , -1)
+	setConfInt64(confMods, "segment.ms"     , conf.SegmentMsChanged,     	conf.SegmentMs      , -1)
+
+	parms = writeConfMods(parms, &confMods)
+
+	// parms = append(parms, "--moo")
+
 	return parms
 }
 
