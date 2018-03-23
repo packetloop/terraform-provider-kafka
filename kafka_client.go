@@ -98,7 +98,7 @@ func (client *KafkaManagingClient) describeTopic(name string) (*KafkaTopicInfo, 
 
 	//does not exist
 	if strOut == "" {
-		fmt.Printf("Topic not found {}", name)
+		fmt.Printf("Topic not found %s", name)
 		return nil, nil
 	}
 

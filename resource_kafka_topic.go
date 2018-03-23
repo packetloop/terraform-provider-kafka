@@ -62,6 +62,12 @@ func resourceKafkaTopic() *schema.Resource {
 				Description: "segment.ms",
 				Default:     -1,
 			},
+			"min_insync_replicas": &schema.Schema{
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "min.insync.replicas",
+				Default:     -1,
+			},
 		},
 	}
 }
@@ -133,6 +139,7 @@ func resourceKafkaTopicRead(d *schema.ResourceData, meta interface{}) error {
 	d.Set("retention_ms", info.RetentionMs)
 	d.Set("segment_ms", info.SegmentMs)
 	d.Set("segment_bytes", info.SegmentBytes)
+	d.Set("min_insync_replicas", info.MinInsyncReplicas)
 
 	return nil
 }
@@ -155,6 +162,7 @@ func buildKafkaConfig(d *schema.ResourceData) *KafkaTopicInfo {
 		RetentionMs:              int64(d.Get("retention_ms").(int)),
 		SegmentBytes:             int64(d.Get("segment_bytes").(int)),
 		SegmentMs:                int64(d.Get("segment_ms").(int)),
+		MinInsyncReplicas:        int64(d.Get("min_insync_replicas").(int)),
 		PartitionsCountChanged:   d.HasChange("partitions"),
 		ReplicationFactorChanged: d.HasChange("replication_factor"),
 		CleanupPolicyChanged:     d.HasChange("cleanup_policy"),
@@ -162,5 +170,6 @@ func buildKafkaConfig(d *schema.ResourceData) *KafkaTopicInfo {
 		RetentionMsChanged:       d.HasChange("retention_ms"),
 		SegmentBytesChanged:      d.HasChange("segment_bytes"),
 		SegmentMsChanged:         d.HasChange("segment_ms"),
+		MinInsyncReplicasChanged: d.HasChange("min_insync_replicas"),
 	}
 }
