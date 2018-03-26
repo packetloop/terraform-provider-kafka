@@ -21,6 +21,7 @@ Topic: file-imported	Partition: 11	Leader: -1	Replicas: 0	Isr:`
 
 	shortDescribeResponse  = "Topic:file-imported	PartitionCount:12	ReplicationFactor:3	Configs:retention.ms=1457999337,cleanup.policy=compact,segment.ms=86400000,segment.bytes=10000"
 	shortDescribeResponse2 = "Topic:file-imported	PartitionCount:12	ReplicationFactor:3	Configs:retention.bytes=1023"
+	shortDescribeResponse3 = "Topic:file-imported	PartitionCount:12	ReplicationFactor:3	Configs:retention.bytes=1023,min.insync.replicas=8"
 
 	emptyDescribeResponse = ""
 
@@ -84,6 +85,7 @@ func TestKafkaManagingClient_shortTopicInfo(t *testing.T) {
 	assertString(t, "CleanupPolicy", res.CleanupPolicy, "compact")
 	assertInt64(t, "SegmentBytes", res.SegmentBytes, 10000)
 	assertInt64(t, "SegmentMs", res.SegmentMs, 86400000)
+    assertInt64(t, "MinInsyncReplicas", res.MinInsyncReplicas, -1)
 
 	res, err = readTopicInfo(shortDescribeResponse2)
 	if err != nil {
@@ -96,6 +98,20 @@ func TestKafkaManagingClient_shortTopicInfo(t *testing.T) {
 	assertString(t, "CleanupPolicy", res.CleanupPolicy, "")
 	assertInt64(t, "SegmentBytes", res.SegmentBytes, -1)
 	assertInt64(t, "SegmentMs", res.SegmentMs, -1)
+    assertInt64(t, "MinInsyncReplicas", res.MinInsyncReplicas, -1)
+
+	res, err = readTopicInfo(shortDescribeResponse3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertInt(t, "PartitionsCount", res.PartitionsCount, 12)
+	assertInt(t, "ReplicationFactor", res.ReplicationFactor, 3)
+	assertInt64(t, "RetentionBytes", res.RetentionBytes, 1023)
+	assertInt64(t, "RetentionMs", res.RetentionMs, -1)
+	assertString(t, "CleanupPolicy", res.CleanupPolicy, "")
+	assertInt64(t, "SegmentBytes", res.SegmentBytes, -1)
+	assertInt64(t, "SegmentMs", res.SegmentMs, -1)
+    assertInt64(t, "MinInsyncReplicas", res.MinInsyncReplicas, 8)
 }
 
 func assertInt(t *testing.T, name string, value int, expected int) {

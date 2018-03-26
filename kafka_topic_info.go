@@ -10,6 +10,7 @@ type KafkaTopicInfo struct {
 	RetentionMs       int64
 	SegmentBytes      int64
 	SegmentMs         int64
+	MinInsyncReplicas int64
 	PartitionsCountChanged   bool
 	ReplicationFactorChanged bool
 	CleanupPolicyChanged     bool
@@ -17,6 +18,7 @@ type KafkaTopicInfo struct {
 	RetentionMsChanged       bool
 	SegmentBytesChanged      bool
 	SegmentMsChanged         bool
+	MinInsyncReplicasChanged bool
 }
 
 type ConfMods struct {
@@ -88,6 +90,7 @@ func (conf *KafkaTopicInfo) alterTopicConfigOpts() []string {
 	setConfInt64(confMods, "retention.ms"   , conf.RetentionMsChanged,   	conf.RetentionMs    , -1)
 	setConfInt64(confMods, "segment.bytes"  , conf.SegmentBytesChanged,  	conf.SegmentBytes   , -1)
 	setConfInt64(confMods, "segment.ms"     , conf.SegmentMsChanged,     	conf.SegmentMs      , -1)
+	setConfInt64(confMods, "min.insync.replicas"     , conf.MinInsyncReplicasChanged,     	conf.MinInsyncReplicas      , -1)
 
 	parms = writeConfMods(parms, &confMods)
 
@@ -114,6 +117,10 @@ func (conf *KafkaTopicInfo) createTopicConfigOpts() []string {
 
 	if conf.SegmentMs > -1 {
 		parms = appendConf(parms, "segment.ms", strconv.FormatInt(conf.SegmentMs, 10))
+	}
+
+	if conf.MinInsyncReplicas > -1 {
+		parms = appendConf(parms, "min.insync.replicas", strconv.FormatInt(conf.MinInsyncReplicas, 10))
 	}
 
 	return parms
