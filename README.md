@@ -33,7 +33,7 @@ $ terraform apply
 - `retention_ms` - the retention period in milliseconds for the topic
 - `cleanup_policy` - the clean up policy for the topic, for example compaction
 - `segment_bytes` - the segment file size for the log
-- `segment_ms` - th:e time after which Kafka will force the log to roll
+- `segment_ms` - the time after which Kafka will force the log to roll
 - `min_insync_replicas` - the minimum number of insync replicas
 
 ## Building

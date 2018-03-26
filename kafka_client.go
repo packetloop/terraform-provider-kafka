@@ -151,6 +151,7 @@ func readTopicInfo(txt string) (*KafkaTopicInfo, error) {
 		RetentionMs:       getOrDefaultInt(confOpts, "retention.ms", -1),
 		SegmentMs:         getOrDefaultInt(confOpts, "segment.ms", -1),
 		SegmentBytes:      getOrDefaultInt(confOpts, "segment.bytes", -1),
+		MinInsyncReplicas: getOrDefaultInt(confOpts, "min.insync.replicas", -1),
 	}
 
 	return info, nil
