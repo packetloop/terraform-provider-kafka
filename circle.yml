@@ -1,0 +1,45 @@
+# Golang CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-go/ for more details
+version: 2
+defaults: &defaults
+  working_directory: /go/src/github.com/packetloop/terraform-provider-kafka
+  docker:
+    # specify the version
+    - image: circleci/golang:1.10
+
+jobs:
+  test:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: make vendor
+      - run: HOST=localhost TF_ACC= make test
+
+  deploy:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: make release
+
+workflows:
+  version: 2
+  test-n-deploy:
+    jobs:
+      # a job must have a filters tags section to run as a part of a tag push and
+      # all its transitively dependent jobs must also have a filters tags section.
+      # ^ This is key, test must have tag filters since deploy requires it.
+      - test:
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              only: /.*/
+      - deploy:
+          requires:
+            - test
+          filters:
+            tags:
+              only: /v[0-9]+(\.[0-9]+)*/
+            branches:
+              ignore: /.*/

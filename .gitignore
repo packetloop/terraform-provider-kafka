@@ -1,0 +1,7 @@
+crash.log
+*.swp
+terraform-provider-kafka
+.terraform
+terraform.tfstate
+.vscode
+terraform.tfstate.backup
