@@ -1,0 +1,22 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.9
+    working_directory: /go/src/github.com/packetloop/go-kafkaesque
+    steps:
+      - checkout
+      - run: go get github.com/tcnksm/ghr
+      - run: make coverage
+
+
+## TODO: Enable below block to cut releases and produce binary. This
+# is however config for circleCI v1.
+# deployment:
+#   release:
+#     tag: /v[0-9]+(\.[0-9]+)*/
+#     commands:
+#       - make compile
+#       - ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` release/
+#       - make build TOKEN=$GITHUB_TOKEN
+#       - make push

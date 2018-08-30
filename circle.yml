@@ -6,7 +6,7 @@ defaults: &defaults
   working_directory: /go/src/github.com/packetloop/terraform-provider-kafka
   docker:
     # specify the version
-    - image: circleci/golang:1.10
+    - image: circleci/golang:1.11
 
 jobs:
   test:

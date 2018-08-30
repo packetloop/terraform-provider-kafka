@@ -33,7 +33,7 @@ curl -L \
 
 ```bash
 provider "kafka" {
-  url     = "http://localhost:8080"
+  host_url     = "http://localhost:8080"
   version = "~> 0.1.0"
 }
 

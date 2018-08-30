@@ -3,7 +3,7 @@ package = github.com/packetloop/$(PROJECT_NAME)
 
 .PHONY: test
 test: dep env
-	HOST=$(HOST) TF_ACC=$(TF_ACC) go test -race -cover ./...
+	HOST_URL=$(HOST_URL) TF_ACC=$(TF_ACC) go test -race -cover ./...
 
 .PHONY: vendor
 vendor: dep
