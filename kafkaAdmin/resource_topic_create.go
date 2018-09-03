@@ -95,8 +95,8 @@ func resourceKafkaTopicExists(d *schema.ResourceData, m interface{}) (b bool, e 
 
 func createRequest(d *schema.ResourceData, m interface{}) error {
 	id := strings.ToLower(d.Get("name").(string))
-	//partitions := int64(d.Get("partitions").(int))
-	//replicationFactor := int64(d.Get("replication_factor").(int))
+	partitions := int64(d.Get("partitions").(int))
+	replicationFactor := int64(d.Get("replication_factor").(int))
 	//	retentionMs := d.Get("retention_ms").(string)
 	//	cleanupPolicy := d.Get("cleanup_policy").(string)
 	//	segmentBytes := d.Get("segment_bytes").(int)
@@ -107,8 +107,8 @@ func createRequest(d *schema.ResourceData, m interface{}) error {
 	log.Printf("[TRACE] creating kafka topic '%s'...", id)
 	client := clientConn(m)
 	t := kafka.NewTopic(id).
-		SetReplicationFactor(3).
-		SetPartitions(2).
+		SetReplicationFactor(replicationFactor).
+		SetPartitions(partitions).
 		BuildTopic()
 	resp, err := client.CreateTopic(t)
 
@@ -151,7 +151,8 @@ func resourceKafkaTopicUpdate(d *schema.ResourceData, m interface{}) error {
 	d.Partial(true)
 
 	if d.HasChange("name") ||
-		d.HasChange("replication_factor") {
+		d.HasChange("replication_factor") ||
+		d.HasChange("partitions") {
 		log.Printf("[TRACE] force new detected on existing topic (%s) success", d.Id())
 		err := resourceKafkaTopicDelete(d, m)
 		if err != nil {

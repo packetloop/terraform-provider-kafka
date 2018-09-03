@@ -20,7 +20,7 @@ func Provider() terraform.ResourceProvider {
 				Type:        schema.TypeInt,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("retry", 3),
-				Description: "Number of times to retry when http requests fails. Defaults to 3.",
+				Description: "Number of times to retry when HTTP request fails. Defaults to 3.",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{

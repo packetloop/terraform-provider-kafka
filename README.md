@@ -48,6 +48,23 @@ resource "kafka_topic" "my-topic" {
 }
 ```
 
+## Development and testing:
+
+1. Clone kafka-admin-service ( REST SERVICE )
+
+```bash
+  git clone git@github.com:packetloop/kafka-admin-service.git && \
+    cd kafka-admin-service && ./run.sh
+
+    TF_ACC=1 make test
+```
+
+2. From this project:
+
+```
+  TF_ACC=0  go test -race -cover -v ./...
+```
+
 More examples can be found in examples/main.tf.
 
 ## TODO:
@@ -57,8 +74,8 @@ More examples can be found in examples/main.tf.
 Syntax
 
 ```
- terraform import kafka_request.lenfree-run <resource ID>
- terraform import kafka_docker_deploy.test-deploy-2 <resource ID>
+  terraform import kafka_request.lenfree-run <resource ID>
+  terraform import kafka_docker_deploy.test-deploy-2 <resource ID>
 ```
 
 ### Data resource:
