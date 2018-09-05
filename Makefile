@@ -18,8 +18,8 @@ dep:
 
 .PHONY: env
 env:
-ifndef HOST
-	$(error HOST is not set)
+ifndef HOST_URL
+	$(error HOST_URL is not set)
 endif
 
 .PHONY: build
