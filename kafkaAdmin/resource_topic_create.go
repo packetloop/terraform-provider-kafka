@@ -76,7 +76,7 @@ func resourceKafkaTopic() *schema.Resource {
 
 func resourceKafkaTopicCreate(d *schema.ResourceData, m interface{}) error {
 
-	id := d.Get("name").(string)
+	id := strings.ToLower(d.Get("name").(string))
 	d.SetId(id)
 	return createRequest(d, m)
 }
@@ -135,7 +135,7 @@ func resourceKafkaTopicRead(d *schema.ResourceData, m interface{}) error {
 		return fmt.Errorf("GETTING TOPIC '%s' ERROR: %v", d.Id(), err)
 	}
 	// Unfortunately get topics does not return name of topic, only its config params.
-	d.Set("name", d.Id())
+	d.Set("name", strings.ToLower(d.Id()))
 	d.Set("partitions", r.GetPartitions())
 	d.Set("replication_factor", r.GetReplicationFactor())
 	d.Set("retention_ms", r.GetRetentionMs())
