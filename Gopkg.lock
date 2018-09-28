@@ -333,7 +333,7 @@
   branch = "master"
   name = "github.com/packetloop/go-kafkaesque"
   packages = ["."]
-  revision = "db7961dec55220802e8f536c767e33041e1175a9"
+  revision = "c8c6d2d9bbfd64df26b0b6960e02fa678f078d7e"
 
 [[projects]]
   name = "github.com/posener/complete"
