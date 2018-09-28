@@ -24,18 +24,18 @@ func resourceKafkaTopic() *schema.Resource {
 				Description: "Kafka topic name",
 			},
 			"partitions": &schema.Schema{
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Required:    true,
 				Description: "number of partitions for the topic",
 			},
 			"replication_factor": &schema.Schema{
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				Description: "the replication factor for the topic",
 			},
 			"retention_ms": &schema.Schema{
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "the retention period in milliseconds for the topic",
 				Default:     -1,
@@ -44,28 +44,28 @@ func resourceKafkaTopic() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "the clean up policy for the topic, for example compaction",
-				Default:     "",
+				Default:     "compact",
 			},
 			"segment_bytes": &schema.Schema{
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "the segment file size for the log",
 				Default:     -1,
 			},
 			"min_insync_replicas": &schema.Schema{
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "the minimum number of insync replicas",
 				Default:     -1,
 			},
 			"segment_ms": &schema.Schema{
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "the time after which Kafka will force the log to roll",
 				Default:     -1,
 			},
 			"retention_bytes": &schema.Schema{
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Optional:    true,
 				Description: "the retention bytes for the topic",
 				Default:     -1,
@@ -95,14 +95,14 @@ func resourceKafkaTopicExists(d *schema.ResourceData, m interface{}) (b bool, e 
 
 func createRequest(d *schema.ResourceData, m interface{}) error {
 	id := strings.ToLower(d.Get("name").(string))
-	partitions := int64(d.Get("partitions").(int))
-	replicationFactor := int64(d.Get("replication_factor").(int))
-	//	retentionMs := d.Get("retention_ms").(string)
-	//	cleanupPolicy := d.Get("cleanup_policy").(string)
-	//	segmentBytes := d.Get("segment_bytes").(int)
-	//	retentionBytes := d.Get("retention_bytes").(int)
-	//	segmentMs := d.Get("segment_ms").(int)
-	//	minInsyncReplicas := d.Get("min_insync_replicas").(int)
+	partitions := d.Get("partitions").(string)
+	replicationFactor := d.Get("replication_factor").(string)
+	retentionMs := d.Get("retention_ms").(string)
+	cleanupPolicy := d.Get("cleanup_policy").(string)
+	segmentBytes := d.Get("segment_bytes").(string)
+	retentionBytes := d.Get("retention_bytes").(string)
+	segmentMs := d.Get("segment_ms").(string)
+	minInsyncReplicas := d.Get("min_insync_replicas").(string)
 
 	log.Printf("[TRACE] creating kafka topic '%s'...", id)
 	client := clientConn(m)
@@ -110,12 +110,20 @@ func createRequest(d *schema.ResourceData, m interface{}) error {
 		SetReplicationFactor(replicationFactor).
 		SetPartitions(partitions).
 		BuildTopic()
+	t.Config = &kafka.Config{
+		RetentionMs:       retentionMs,
+		SegmentBytes:      segmentBytes,
+		CleanupPolicy:     cleanupPolicy,
+		MinInsyncReplicas: minInsyncReplicas,
+		RetentionBytes:    retentionBytes,
+		SegmentMs:         segmentMs,
+	}
 	resp, err := client.CreateTopic(t)
 
 	return checkResponse(d, m, resp, err)
 }
 
-func checkResponse(d *schema.ResourceData, m interface{}, r kafka.GenericResponse, err error) error {
+func checkResponse(d *schema.ResourceData, m interface{}, r kafka.Response, err error) error {
 	log.Printf("[TRACE] Create Topic %v", r)
 	if err != nil {
 		return fmt.Errorf("CREATE TOPIC '%s' ERROR: %v", d.Id(), err)

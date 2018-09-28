@@ -11,72 +11,71 @@ func callError(msg string) func(error) error {
 }
 
 // GetTopics is a method that returns all Kafka topics.
-func (client *Client) GetTopics() (Topics, error) {
+func (client *Client) GetTopics() (AllTopics, error) {
 	e := callError("LIST TOPICS")
 
 	resp, err := client.Rest.R().Get("/topics")
 	if err != nil {
-		return Topics{}, e(err)
+		return AllTopics{}, e(err)
 	}
 	if resp.StatusCode() >= 200 && resp.StatusCode() <= 299 {
-		var data Topics
+		var data AllTopics
 		err := client.Rest.JSONUnmarshal(resp.Body(), &data)
 		if err != nil {
-			return Topics{}, e(err)
+			return AllTopics{}, e(err)
 		}
 		return data, nil
 	}
-	return Topics{}, e(fmt.Errorf("%v", resp.Status()))
+	return AllTopics{}, e(fmt.Errorf("%v: %v", resp.Status(), string(resp.Body())))
 }
 
 // Count is a method that returns total size of topics.
-func (t Topics) Count() int {
-	return len(t.Response.Topics)
+func (t AllTopics) Count() int {
+	return len(t.Topics)
 }
 
-// Topics is a method that returns a slice of topics.
-func (t Topics) Topics() []string {
-	return t.Response.Topics
+// TopicsToString is a method that returns a slice of topics.
+func (t AllTopics) TopicsToString() []string {
+	return t.Topics
 }
 
 // GetTopic is a method that return a Kafka topic
-func (client *Client) GetTopic(t string) (TopicResponse, error) {
+func (client *Client) GetTopic(t string) (Topic, error) {
 	e := callError(fmt.Sprintf("GET TOPIC %s", t))
 
 	resp, err := client.Rest.R().Get(uriPath("/topics", t))
 	if err != nil {
-		return TopicResponse{}, e(err)
+		return Topic{}, e(err)
 	}
 	if resp.StatusCode() >= 200 && resp.StatusCode() <= 299 {
-		var data TopicResponse
+		var data Topic
 		err := client.Rest.JSONUnmarshal(resp.Body(), &data)
 		if err != nil {
-			return TopicResponse{}, e(err)
+			return Topic{}, e(err)
 		}
 		return data, nil
 	}
-	return TopicResponse{}, e(fmt.Errorf("%v", resp.Status()))
+	return Topic{}, e(fmt.Errorf("%v: %v", resp.Status(), string(resp.Body())))
 }
 
 // GetPartitions is a method that returns partitions of a topic.
-func (t Topic) GetPartitions() int64 {
+func (t Topic) GetPartitions() string {
 	return t.Partitions
 }
 
 // GetReplicationFactor is a method that returns partitions of a topic.
-func (t Topic) GetReplicationFactor() int64 {
-	return t.ReplicationFactor
+func (t Topic) GetReplicationFactor() string {
+	return fmt.Sprintf("%s", t.ReplicationFactor)
 }
 
 // GetRetentionMs is a method that returns partitions of a topic.
 func (c *Config) GetRetentionMs() string {
 	return fmt.Sprintf("%s", c.RetentionMs)
-
 }
 
 // GetSegmentBytes is a method that returns partitions of a topic.
 func (c *Config) GetSegmentBytes() string {
-	return c.SegmentBytes
+	return fmt.Sprintf("%s", c.SegmentBytes)
 
 }
 
@@ -106,8 +105,8 @@ func (c *Config) GetMinInSyncReplicas() string {
 // TopicBuilder is an interface that builds a Kafka Topic
 // Config.
 type TopicBuilder interface {
-	SetPartitions(int64) TopicBuilder
-	SetReplicationFactor(int64) TopicBuilder
+	SetPartitions(string) TopicBuilder
+	SetReplicationFactor(string) TopicBuilder
 	SetConfig(Config) TopicBuilder
 	BuildTopic() Topic
 }
@@ -121,14 +120,14 @@ func NewTopic(name string) TopicBuilder {
 
 // SetPartitions is a method that accepts an int64 and sets Topic
 // partition.
-func (t *Topic) SetPartitions(p int64) TopicBuilder {
+func (t *Topic) SetPartitions(p string) TopicBuilder {
 	t.Partitions = p
 	return t
 }
 
 // SetReplicationFactor is a method that accepts an int64 and sets Topic
 // replication factor.
-func (t *Topic) SetReplicationFactor(r int64) TopicBuilder {
+func (t *Topic) SetReplicationFactor(r string) TopicBuilder {
 	t.ReplicationFactor = r
 	return t
 }
@@ -147,51 +146,72 @@ func (t *Topic) BuildTopic() Topic {
 		Name:              t.Name,
 		ReplicationFactor: t.ReplicationFactor,
 		Partitions:        t.Partitions,
+		Config:            t.Config,
 	}
 }
 
 // CreateTopic accepts a Topic and returns an "Ok" response
 // or error.
-func (client *Client) CreateTopic(t Topic) (GenericResponse, error) {
+func (client *Client) CreateTopic(t Topic) (Response, error) {
 	e := callError(fmt.Sprintf("CREATE TOPIC %+v", t))
 
 	resp, err := client.Rest.R().SetBody(t).Post("/topics")
 	if err != nil {
-		return GenericResponse{}, e(err)
+		return Response{}, e(err)
 	}
 	if resp.StatusCode() >= 200 && resp.StatusCode() <= 299 {
-		var data GenericResponse
+		var data Response
 		err := client.Rest.JSONUnmarshal(resp.Body(), &data)
 		if err != nil {
-			return GenericResponse{}, e(err)
+			return Response{}, e(err)
 		}
 		return data, nil
 	}
-	return GenericResponse{}, e(fmt.Errorf("%v", resp.Status()))
+	return Response{}, e(fmt.Errorf("%v: %v", resp.Status(), string(resp.Body())))
 }
 
 // DeleteTopic method accepts a string topic, deletes this Kafka topic and
 // returns a string response or error.
-func (client *Client) DeleteTopic(t string) (GenericResponse, error) {
+func (client *Client) DeleteTopic(t string) (Response, error) {
 	e := callError(fmt.Sprintf("DELETE TOPIC %v", t))
 
 	resp, err := client.Rest.R().Delete(uriPath("/topics", t))
 	if err != nil {
-		return GenericResponse{}, e(err)
+		return Response{}, e(err)
 	}
 	if resp.StatusCode() >= 200 && resp.StatusCode() <= 299 {
-		var data GenericResponse
+		var data Response
 		err := client.Rest.JSONUnmarshal(resp.Body(), &data)
 		if err != nil {
-			return GenericResponse{}, e(err)
+			return Response{}, e(err)
 		}
 		return data, nil
 	}
-	return GenericResponse{}, e(fmt.Errorf("%v", resp.Status()))
+	return Response{}, e(fmt.Errorf("%v: %v", resp.Status(), string(resp.Body())))
 }
 
 // uriPath function accepts path and topic string and returns a
 // valid uri path of /topics/<topic_name>.
 func uriPath(p, t string) string {
 	return p + "/" + t
+}
+
+// UpdateTopic is a method that update a Kafka topic. This requires complete
+// config parameters set. If we want to allow only update optional params,
+// we need to implement PATCH request instead.
+func (client *Client) UpdateTopic(t Topic) (Response, error) {
+	e := callError(fmt.Sprintf("Update TOPIC %+v", t))
+	resp, err := client.Rest.R().SetBody(t).Put(uriPath("/topics", *t.Name))
+	if err != nil {
+		return Response{}, e(err)
+	}
+	if resp.StatusCode() >= 200 && resp.StatusCode() <= 299 {
+		var data Response
+		err := client.Rest.JSONUnmarshal(resp.Body(), &data)
+		if err != nil {
+			return Response{}, e(err)
+		}
+		return data, nil
+	}
+	return Response{}, e(fmt.Errorf("%v", resp.Status()))
 }

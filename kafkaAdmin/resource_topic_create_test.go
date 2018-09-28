@@ -17,7 +17,8 @@ func TestAccKafkaAdminTopicCreate(t *testing.T) {
 		CheckDestroy:              testCheckTopicDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckKafkaTopicCreate,
+				Config:  testAccCheckKafkaTopicCreate,
+				Destroy: false,
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTopicExists("kafka_topic.foo"),
 					resource.TestCheckResourceAttr(
