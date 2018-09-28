@@ -3,6 +3,7 @@ package kafkaadmin
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -24,18 +25,20 @@ func resourceKafkaTopic() *schema.Resource {
 				Description: "Kafka topic name",
 			},
 			"partitions": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:        schema.TypeInt,
 				Description: "number of partitions for the topic",
+				Optional:    true,
+				Default:     1,
 			},
 			"replication_factor": &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
+				Type:        schema.TypeInt,
 				ForceNew:    true,
+				Optional:    true,
 				Description: "the replication factor for the topic",
+				Default:     1,
 			},
 			"retention_ms": &schema.Schema{
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "the retention period in milliseconds for the topic",
 				Default:     -1,
@@ -47,25 +50,25 @@ func resourceKafkaTopic() *schema.Resource {
 				Default:     "compact",
 			},
 			"segment_bytes": &schema.Schema{
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "the segment file size for the log",
-				Default:     -1,
+				Default:     1073741824,
 			},
 			"min_insync_replicas": &schema.Schema{
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "the minimum number of insync replicas",
-				Default:     -1,
+				Default:     1,
 			},
 			"segment_ms": &schema.Schema{
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "the time after which Kafka will force the log to roll",
-				Default:     -1,
+				Default:     604800000,
 			},
 			"retention_bytes": &schema.Schema{
-				Type:        schema.TypeString,
+				Type:        schema.TypeInt,
 				Optional:    true,
 				Description: "the retention bytes for the topic",
 				Default:     -1,
@@ -87,7 +90,7 @@ func resourceKafkaTopicExists(d *schema.ResourceData, m interface{}) (b bool, e 
 	client := clientConn(m)
 	_, err := client.GetTopic(d.Id())
 	if err != nil {
-		return false, fmt.Errorf("EXIST %v : %v", d.Id(), err)
+		return false, fmt.Errorf("DOES NOT EXIST '%v' : %v", d.Id(), err)
 	}
 	return true, nil
 
@@ -95,14 +98,14 @@ func resourceKafkaTopicExists(d *schema.ResourceData, m interface{}) (b bool, e 
 
 func createRequest(d *schema.ResourceData, m interface{}) error {
 	id := strings.ToLower(d.Get("name").(string))
-	partitions := d.Get("partitions").(string)
-	replicationFactor := d.Get("replication_factor").(string)
-	retentionMs := d.Get("retention_ms").(string)
+	partitions := strconv.Itoa(d.Get("partitions").(int))
+	replicationFactor := strconv.Itoa(d.Get("replication_factor").(int))
+	retentionMs := strconv.Itoa(d.Get("retention_ms").(int))
 	cleanupPolicy := d.Get("cleanup_policy").(string)
-	segmentBytes := d.Get("segment_bytes").(string)
-	retentionBytes := d.Get("retention_bytes").(string)
-	segmentMs := d.Get("segment_ms").(string)
-	minInsyncReplicas := d.Get("min_insync_replicas").(string)
+	segmentBytes := strconv.Itoa(d.Get("segment_bytes").(int))
+	retentionBytes := strconv.Itoa(d.Get("retention_bytes").(int))
+	segmentMs := strconv.Itoa(d.Get("segment_ms").(int))
+	minInsyncReplicas := strconv.Itoa(d.Get("min_insync_replicas").(int))
 
 	log.Printf("[TRACE] creating kafka topic '%s'...", id)
 	client := clientConn(m)
