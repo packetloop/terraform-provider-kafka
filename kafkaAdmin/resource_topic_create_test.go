@@ -97,6 +97,54 @@ resource "kafka_topic" "foobar" {
 }
 `
 
+func TestAccKafkaAdminTopicUpdate(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreventPostDestroyRefresh: true,
+		PreCheck:                  func() { testAccPreCheck(t) },
+		Providers:                 testAccProviders,
+		CheckDestroy:              testCheckTopicDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckKafkaTopicCreate,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTopicExists("kafka_topic.foo"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foo", "name", "mytopic"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foo", "partitions", "2"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foo", "replication_factor", "3"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foo", "retention_ms", "-1"),
+				),
+			},
+			{
+				Config: testAccCheckKafkaTopicUpdate,
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckTopicExists("kafka_topic.foo"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foo", "name", "mytopic"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foo", "partitions", "2"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foo", "replication_factor", "3"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foo", "retention_ms", "100000"),
+				),
+			},
+		},
+	})
+}
+
+const testAccCheckKafkaTopicUpdate = `
+resource "kafka_topic" "foo" {
+  name = "mytopic"
+  partitions = 2
+  replication_factor = 3
+  retention_ms = 100000
+}
+`
+
 func testAccCheckTopicExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testAccProvider.Meta().(*Conn).sclient
