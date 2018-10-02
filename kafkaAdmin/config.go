@@ -1,7 +1,7 @@
 package kafkaadmin
 
 import (
-	kafka "github.com/packetloop/go-kafkaesque"
+	kafka "github.com/comozo/go-kafkaesque"
 )
 
 // Conn is the client connection manager for singularity provider.

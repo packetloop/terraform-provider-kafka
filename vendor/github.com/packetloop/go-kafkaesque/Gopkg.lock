@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  branch = "mayh-9583-return-topic"
+  name = "github.com/comozo/go-kafkaesque"
+  packages = ["."]
+  revision = "8e183cadfdfac0c865f9dff1572047b305e489bf"
+
+[[projects]]
   name = "github.com/go-resty/resty"
   packages = ["."]
   revision = "97a15579492cd5f35632499f315d7a8df94160a1"
@@ -40,6 +46,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8abde375ca49b13225f6c67d1d31c0ebfee0339e6c97db95743c5e671733fdd4"
+  inputs-digest = "d7fb04212c3254087a9ca5c8b43395e4d196a2e4dc3bf2dab0238ba9d0aa84e5"
   solver-name = "gps-cdcl"
   solver-version = 1
