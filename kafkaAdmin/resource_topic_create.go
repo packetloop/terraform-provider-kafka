@@ -5,8 +5,8 @@ import (
 	"log"
 	"strings"
 
-	kafka "github.com/comozo/go-kafkaesque"
 	"github.com/hashicorp/terraform/helper/schema"
+	kafka "github.com/packetloop/go-kafkaesque"
 )
 
 func resourceKafkaTopic() *schema.Resource {
@@ -136,26 +136,6 @@ func checkResponse(d *schema.ResourceData, m interface{}, r kafka.Response, err 
 	return resourceKafkaTopicRead(d, m)
 }
 
-const (
-	Exists      = 1
-	DoNotExists = 2
-)
-
-type topicStatus struct {
-	state int
-}
-
-func errorHelper(err error) (topicStatus, error) {
-	log.Printf("[INFO] Error %+v", err)
-	if err != nil && !strings.Contains(err.Error(), "404") {
-		return topicStatus{}, err
-	}
-	if err != nil && strings.Contains(err.Error(), "404") {
-		return topicStatus{state: DoNotExists}, err
-	}
-	return topicStatus{state: Exists}, err
-}
-
 // resourceKafkaTopicRead is called to resync the local state with the remote state.
 // Terraform guarantees that an existing ID will be set. This ID should be used
 // to look up the resource. Any remote data should be updated into the local data.
@@ -164,15 +144,9 @@ func resourceKafkaTopicRead(d *schema.ResourceData, m interface{}) error {
 	client := clientConn(m)
 
 	r, err := client.GetTopic(d.Id())
-	// status, err := errorHelper(err)
-
 	if err != nil {
-		return nil
+		return fmt.Errorf("GETTING TOPIC '%s' ERROR: %v", d.Id(), err)
 	}
-
-	// if err != nil {
-	// 	return fmt.Errorf("GETTING TOPIC '%s' ERROR: %v", d.Id(), err)
-	// }
 
 	// Unfortunately get topics does not return name of topic, only its config params.
 	d.Set("name", d.Id())
@@ -191,17 +165,6 @@ func resourceKafkaTopicRead(d *schema.ResourceData, m interface{}) error {
 func resourceKafkaTopicUpdate(d *schema.ResourceData, m interface{}) error {
 	d.Partial(true)
 
-	if d.HasChange("name") ||
-		d.HasChange("replication_factor") ||
-		d.HasChange("partitions") {
-		log.Printf("[TRACE] force new detected on existing topic (%s) success", d.Id())
-		err := resourceKafkaTopicDelete(d, m)
-		if err != nil {
-			return err
-		}
-		d.Partial(false)
-		return resourceKafkaTopicCreate(d, m)
-	}
 	if d.HasChange("partitions") ||
 		d.HasChange("retention_ms") ||
 		d.HasChange("cleanup_policy") ||

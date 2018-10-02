@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	kafka "github.com/comozo/go-kafkaesque"
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	kafka "github.com/packetloop/go-kafkaesque"
 )
 
 func TestAccKafkaAdminTopicCreate(t *testing.T) {
@@ -21,7 +21,7 @@ func TestAccKafkaAdminTopicCreate(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckTopicExists("kafka_topic.foo"),
 					resource.TestCheckResourceAttr(
-						"kafka_topic.foo", "name", "foo"),
+						"kafka_topic.foo", "name", "mytopic"),
 					resource.TestCheckResourceAttr(
 						"kafka_topic.foo", "partitions", "2"),
 					resource.TestCheckResourceAttr(
@@ -165,10 +165,9 @@ func TopicExistsHelper(s *terraform.State, client *kafka.Client) error {
 	for _, r := range s.RootModule().Resources {
 		id := r.Primary.ID
 
-		_, err := client.GetTopic(id)
-		status, _ := errorHelper(err)
-		if status.state == Exists {
-			return fmt.Errorf("ERROR TOPIC '%s': %v", id, err)
+		// If topic exist, returns error nil.
+		if _, err := client.GetTopic(id); err != nil {
+			return fmt.Errorf("ERROR TOPIC '%s' DOES NOT EXIST: %v", id, err)
 		}
 	}
 	return nil

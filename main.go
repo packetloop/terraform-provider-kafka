@@ -1,8 +1,8 @@
 package main
 
 import (
-	kafkaadmin "github.com/comozo/terraform-provider-kafka/kafkaAdmin"
 	"github.com/hashicorp/terraform/plugin"
+	kafkaadmin "github.com/packetloop/terraform-provider-kafka/kafkaAdmin"
 )
 
 func main() {

@@ -336,12 +336,6 @@
   revision = "c8c6d2d9bbfd64df26b0b6960e02fa678f078d7e"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/packetloop/terraform-provider-kafka"
-  packages = ["kafkaAdmin"]
-  revision = "67c851c549beb6652cfc1269052bfa9e7f23f297"
-
-[[projects]]
   name = "github.com/posener/complete"
   packages = [
     ".",
@@ -481,6 +475,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "be09bf25bafddeba1ea30b839cc51f5916447005222c7a8b9bd65cdd29b8b197"
+  inputs-digest = "1511165f3cab637940a496334e076e21b3b78eab8f1c34063faf2d72ef7ad003"
   solver-name = "gps-cdcl"
   solver-version = 1

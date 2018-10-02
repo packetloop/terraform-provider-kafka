@@ -1,5 +1,5 @@
 PROJECT_NAME := terraform-provider-kafka
-package = github.com/comozo/$(PROJECT_NAME)
+package = github.com/packetloop/$(PROJECT_NAME)
 
 .PHONY: test
 test: dep env
