@@ -26,6 +26,18 @@ func TestAccKafkaAdminTopicCreate(t *testing.T) {
 						"kafka_topic.foo", "partitions", "2"),
 					resource.TestCheckResourceAttr(
 						"kafka_topic.foo", "replication_factor", "3"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foo", "min_insync_replicas", "1"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foobar", "cleanup_policy", "compact"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foobar", "retention_ms", "-1"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foobar", "segment_bytes", "604800000"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foobar", "segment_ms", "600000"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foobar", "retention_bytes", "-1"),
 				),
 			},
 		},
@@ -67,6 +79,8 @@ func TestAccKafkaAdminTopicCreateWithConfig(t *testing.T) {
 						"kafka_topic.foobar", "segment_ms", "600000"),
 					resource.TestCheckResourceAttr(
 						"kafka_topic.foobar", "retention_bytes", "100000"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foobar", "min_insync_replicas", "2"),
 				),
 			},
 		},
@@ -132,6 +146,11 @@ resource "kafka_topic" "foo" {
   partitions = 2
   replication_factor = 3
   retention_ms = 100000
+  cleanup_policy = "compact"
+  segment_bytes = 21474836
+  min_insync_replicas = 2
+  retention_bytes = 100000
+  segment_ms = 600000
 }
 `
 
