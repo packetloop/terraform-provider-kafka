@@ -18,3 +18,23 @@ func validateCleanupPolicy(v interface{}, k string) (ws []string, errors []error
 	}
 	return
 }
+
+func validateGreaterThanZero(v interface{}, k string) (ws []string, errors []error) {
+	value := v.(int)
+	if value < 1 {
+		errors = append(errors, fmt.Errorf(
+			"%q must be greater than 1 \"%d\"",
+			k, value))
+	}
+	return
+}
+
+func validateSegmentBytes(v interface{}, k string) (ws []string, errors []error) {
+	value := v.(int)
+	if value < 13 {
+		errors = append(errors, fmt.Errorf(
+			"%q must be greater than 13 \"%d\"",
+			k, value))
+	}
+	return
+}

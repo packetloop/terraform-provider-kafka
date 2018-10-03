@@ -13,8 +13,7 @@ jobs:
     <<: *defaults
     steps:
       - checkout
-      - run: make vendor
-      - run: HOST=localhost TF_ACC= make test
+      - run: HOST_URL=localhost TF_ACC= make test
 
   deploy:
     <<: *defaults
