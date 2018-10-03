@@ -26,6 +26,18 @@ func TestAccKafkaAdminTopicCreate(t *testing.T) {
 						"kafka_topic.foo", "partitions", "2"),
 					resource.TestCheckResourceAttr(
 						"kafka_topic.foo", "replication_factor", "3"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foo", "min_insync_replicas", "1"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foo", "cleanup_policy", "compact"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foo", "retention_ms", "-1"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foo", "segment_bytes", "1073741824"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foo", "segment_ms", "604800000"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foo", "retention_bytes", "-1"),
 				),
 			},
 		},
@@ -34,8 +46,8 @@ func TestAccKafkaAdminTopicCreate(t *testing.T) {
 
 const testAccCheckKafkaTopicCreate = `
 resource "kafka_topic" "foo" {
-  name = "mytopic"
-  partitions = 2
+  name               = "mytopic"
+  partitions         = 2
   replication_factor = 3
 }
 `
@@ -67,6 +79,8 @@ func TestAccKafkaAdminTopicCreateWithConfig(t *testing.T) {
 						"kafka_topic.foobar", "segment_ms", "600000"),
 					resource.TestCheckResourceAttr(
 						"kafka_topic.foobar", "retention_bytes", "100000"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foobar", "min_insync_replicas", "2"),
 				),
 			},
 		},
@@ -75,15 +89,15 @@ func TestAccKafkaAdminTopicCreateWithConfig(t *testing.T) {
 
 const testAccCheckKafkaTopicCreateConfig = `
 resource "kafka_topic" "foobar" {
-  name = "mytopicconfig"
-  partitions = 2
-  replication_factor = 3
-  retention_ms = 300000
-  cleanup_policy = "delete"
-  segment_bytes = 10737418
+  name                = "mytopicconfig"
+  partitions          = 2
+  replication_factor  = 3
+  retention_ms        = 300000
+  cleanup_policy      = "delete"
+  segment_bytes       = 10737418
   min_insync_replicas = 2
-  retention_bytes = 100000
-  segment_ms = 600000
+  retention_bytes     = 100000
+  segment_ms          = 600000
 }
 `
 
@@ -104,6 +118,8 @@ func TestAccKafkaAdminTopicUpdate(t *testing.T) {
 						"kafka_topic.foo", "partitions", "2"),
 					resource.TestCheckResourceAttr(
 						"kafka_topic.foo", "replication_factor", "3"),
+					resource.TestCheckResourceAttr(
+						"kafka_topic.foo", "retention_ms", "-1"),
 				),
 			},
 			{
@@ -117,17 +133,7 @@ func TestAccKafkaAdminTopicUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"kafka_topic.foo", "replication_factor", "3"),
 					resource.TestCheckResourceAttr(
-						"kafka_topic.foo", "retention_ms", "300000"),
-					resource.TestCheckResourceAttr(
-						"kafka_topic.foo", "cleanup_policy", "compact"),
-					resource.TestCheckResourceAttr(
-						"kafka_topic.foo", "segment_bytes", "21474836"),
-					resource.TestCheckResourceAttr(
-						"kafka_topic.foo", "segment_ms", "600000"),
-					resource.TestCheckResourceAttr(
-						"kafka_topic.foo", "retention_bytes", "100000"),
-					resource.TestCheckResourceAttr(
-						"kafka_topic.foo", "min_insync_replicas", "2"),
+						"kafka_topic.foo", "retention_ms", "100000"),
 				),
 			},
 		},
@@ -136,15 +142,15 @@ func TestAccKafkaAdminTopicUpdate(t *testing.T) {
 
 const testAccCheckKafkaTopicUpdate = `
 resource "kafka_topic" "foo" {
-  name = "mytopic"
-  partitions = 2
-  replication_factor = 3
-  retention_ms = 300000
-  cleanup_policy = "compact"
-  segment_bytes = 21474836
+  name                = "mytopic"
+  partitions          = 2
+  replication_factor  = 3
+  retention_ms        = 100000
+  cleanup_policy      = "compact"
+  segment_bytes       = 21474836
   min_insync_replicas = 2
-  retention_bytes = 100000
-  segment_ms = 600000
+  retention_bytes     = 100000
+  segment_ms          = 600000
 }
 `
 
@@ -180,7 +186,7 @@ func TopicExistsHelper(s *terraform.State, client *kafka.Client) error {
 
 		// If topic exist, returns error nil.
 		if _, err := client.GetTopic(id); err != nil {
-			return fmt.Errorf("ERROR TOPIC '%s' DOES NOT EXIST: %v", id, err)
+			return fmt.Errorf("ERROR GET TOPIC '%s': %v", id, err)
 		}
 	}
 	return nil

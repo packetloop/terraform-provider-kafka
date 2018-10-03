@@ -42,7 +42,7 @@ resource "kafka_topic" "my-topic" {
   partitions = 2
   replication_factor = 1
   retention_ms = 300000
-  cleanup.policy = "compact"
+  cleanup_policy = "compact"
   segment_ms = 1440000
   segment_bytes = 1073741824
 }
