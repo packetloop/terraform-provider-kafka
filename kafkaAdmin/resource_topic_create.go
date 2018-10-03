@@ -3,6 +3,7 @@ package kafkaadmin
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -24,45 +25,53 @@ func resourceKafkaTopic() *schema.Resource {
 				Description: "Kafka topic name",
 			},
 			"partitions": &schema.Schema{
-				Type:        schema.TypeInt,
-				Required:    true,
-				Description: "number of partitions for the topic",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "number of partitions for the topic. Must be > 0",
+				Default:      1,
+				ValidateFunc: validateGreaterThanZero,
 			},
 			"replication_factor": &schema.Schema{
-				Type:        schema.TypeInt,
-				Required:    true,
-				ForceNew:    true,
-				Description: "the replication factor for the topic",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				ForceNew:     true,
+				Description:  "the replication factor for the topic. Must be > 0",
+				Default:      1,
+				ValidateFunc: validateGreaterThanZero,
 			},
 			"retention_ms": &schema.Schema{
 				Type:        schema.TypeInt,
 				Optional:    true,
-				Description: "the retention period in milliseconds for the topic",
+				Description: "the retention period in milliseconds for the topic. If set to -1, no time limit is applied",
 				Default:     -1,
 			},
 			"cleanup_policy": &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Description: "the clean up policy for the topic, for example compaction",
-				Default:     "",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Description:  "the clean up policy for the topic. Either delete or compact",
+				Default:      "compact",
+				ValidateFunc: validateCleanupPolicy,
 			},
 			"segment_bytes": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "the segment file size for the log",
-				Default:     -1,
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "the segment file size for the log",
+				Default:      1073741824,
+				ValidateFunc: validateSegmentBytes,
 			},
 			"min_insync_replicas": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "the minimum number of insync replicas",
-				Default:     -1,
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "the minimum number of insync replicas. Must be > 0",
+				Default:      1,
+				ValidateFunc: validateGreaterThanZero,
 			},
 			"segment_ms": &schema.Schema{
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Description: "the time after which Kafka will force the log to roll",
-				Default:     -1,
+				Type:         schema.TypeInt,
+				Optional:     true,
+				Description:  "the time after which Kafka will force the log to roll. Must be > 0",
+				Default:      604800000,
+				ValidateFunc: validateGreaterThanZero,
 			},
 			"retention_bytes": &schema.Schema{
 				Type:        schema.TypeInt,
@@ -87,7 +96,7 @@ func resourceKafkaTopicExists(d *schema.ResourceData, m interface{}) (b bool, e 
 	client := clientConn(m)
 	_, err := client.GetTopic(d.Id())
 	if err != nil {
-		return false, fmt.Errorf("EXIST %v : %v", d.Id(), err)
+		return false, fmt.Errorf("TOPIC '%v' DOES NOT EXIST: %v", d.Id(), err)
 	}
 	return true, nil
 
@@ -95,14 +104,14 @@ func resourceKafkaTopicExists(d *schema.ResourceData, m interface{}) (b bool, e 
 
 func createRequest(d *schema.ResourceData, m interface{}) error {
 	id := strings.ToLower(d.Get("name").(string))
-	partitions := int64(d.Get("partitions").(int))
-	replicationFactor := int64(d.Get("replication_factor").(int))
-	//	retentionMs := d.Get("retention_ms").(string)
-	//	cleanupPolicy := d.Get("cleanup_policy").(string)
-	//	segmentBytes := d.Get("segment_bytes").(int)
-	//	retentionBytes := d.Get("retention_bytes").(int)
-	//	segmentMs := d.Get("segment_ms").(int)
-	//	minInsyncReplicas := d.Get("min_insync_replicas").(int)
+	partitions := strconv.Itoa(d.Get("partitions").(int))
+	replicationFactor := strconv.Itoa(d.Get("replication_factor").(int))
+	retentionMs := strconv.Itoa(d.Get("retention_ms").(int))
+	cleanupPolicy := d.Get("cleanup_policy").(string)
+	segmentBytes := strconv.Itoa(d.Get("segment_bytes").(int))
+	retentionBytes := strconv.Itoa(d.Get("retention_bytes").(int))
+	segmentMs := strconv.Itoa(d.Get("segment_ms").(int))
+	minInsyncReplicas := strconv.Itoa(d.Get("min_insync_replicas").(int))
 
 	log.Printf("[TRACE] creating kafka topic '%s'...", id)
 	client := clientConn(m)
@@ -110,12 +119,23 @@ func createRequest(d *schema.ResourceData, m interface{}) error {
 		SetReplicationFactor(replicationFactor).
 		SetPartitions(partitions).
 		BuildTopic()
+	t.Config = &kafka.Config{
+		RetentionMs:       retentionMs,
+		SegmentBytes:      segmentBytes,
+		CleanupPolicy:     cleanupPolicy,
+		MinInsyncReplicas: minInsyncReplicas,
+		RetentionBytes:    retentionBytes,
+		SegmentMs:         segmentMs,
+	}
 	resp, err := client.CreateTopic(t)
+	if err != nil {
+		log.Printf("[DEBUG] Error Response %v", err)
+	}
 
 	return checkResponse(d, m, resp, err)
 }
 
-func checkResponse(d *schema.ResourceData, m interface{}, r kafka.GenericResponse, err error) error {
+func checkResponse(d *schema.ResourceData, m interface{}, r kafka.Response, err error) error {
 	log.Printf("[TRACE] Create Topic %v", r)
 	if err != nil {
 		return fmt.Errorf("CREATE TOPIC '%s' ERROR: %v", d.Id(), err)
@@ -132,8 +152,9 @@ func resourceKafkaTopicRead(d *schema.ResourceData, m interface{}) error {
 
 	r, err := client.GetTopic(d.Id())
 	if err != nil {
-		return fmt.Errorf("GETTING TOPIC '%s' ERROR: %v", d.Id(), err)
+		return fmt.Errorf("GET TOPIC '%s' ERROR: %v", d.Id(), err)
 	}
+
 	// Unfortunately get topics does not return name of topic, only its config params.
 	d.Set("name", strings.ToLower(d.Id()))
 	d.Set("partitions", r.GetPartitions())
@@ -145,6 +166,7 @@ func resourceKafkaTopicRead(d *schema.ResourceData, m interface{}) error {
 	d.Set("retention_bytes", r.GetRetentionBytes())
 	d.Set("segment_ms", r.GetSegmentMs())
 	return nil
+
 }
 
 func resourceKafkaTopicUpdate(d *schema.ResourceData, m interface{}) error {
@@ -152,46 +174,56 @@ func resourceKafkaTopicUpdate(d *schema.ResourceData, m interface{}) error {
 
 	if d.HasChange("name") ||
 		d.HasChange("replication_factor") ||
-		d.HasChange("partitions") {
-		log.Printf("[TRACE] force new detected on existing topic (%s) success", d.Id())
-		err := resourceKafkaTopicDelete(d, m)
-		if err != nil {
-			return err
-		}
-		d.Partial(false)
-		return resourceKafkaTopicCreate(d, m)
-	}
-	/* update topic config has yet to be implemented on go-kafkaesque
-	if d.HasChange("partitions") ||
+		d.HasChange("partitions") ||
 		d.HasChange("retention_ms") ||
 		d.HasChange("cleanup_policy") ||
 		d.HasChange("segment_bytes") ||
 		d.HasChange("segment_ms") ||
 		d.HasChange("min_insync_replicas") ||
 		d.HasChange("retention_bytes") {
-		log.Printf("[TRACE] update existing topic (%s) success", d.Id())
+		log.Printf("[TRACE] UPDATE TOPIC '%s' success", d.Id())
 		d.Partial(false)
 
-		return resourceKafkaTopicCreate(d, m)
-	}*/
+		return updateRequest(d, m)
+	}
 	return nil
 }
 
-/* update topic config has yet to be implemented on go-kafkaesque
-func updateRequest(id string) (f func(d *schema.ResourceData, m interface{}) error) {
-	return func(d *schema.ResourceData, m interface{}) error {
-		client := clientConn(m)
-		// Return 'Ok' when successful. Otherwise, this throws an error. Hence,
-		// we can safely ignore this.
-		_, err := client.Update(id)
-		if err != nil {
-			return err
-		}
-		d.SetId("")
-		return nil
+func updateRequest(d *schema.ResourceData, m interface{}) error {
+	id := strings.ToLower(d.Get("name").(string))
+	partitions := strconv.Itoa(d.Get("partitions").(int))
+	replicationFactor := strconv.Itoa(d.Get("replication_factor").(int))
+	retentionMs := strconv.Itoa(d.Get("retention_ms").(int))
+	cleanupPolicy := d.Get("cleanup_policy").(string)
+	segmentBytes := strconv.Itoa(d.Get("segment_bytes").(int))
+	retentionBytes := strconv.Itoa(d.Get("retention_bytes").(int))
+	segmentMs := strconv.Itoa(d.Get("segment_ms").(int))
+	minInsyncReplicas := strconv.Itoa(d.Get("min_insync_replicas").(int))
+
+	log.Printf("[TRACE] UPDATE KAFKA TOPIC '%s'...", id)
+
+	client := clientConn(m)
+
+	t := kafka.NewTopic(id).
+		SetReplicationFactor(replicationFactor).
+		SetPartitions(partitions).
+		BuildTopic()
+	t.Config = &kafka.Config{
+		RetentionMs:       retentionMs,
+		SegmentBytes:      segmentBytes,
+		CleanupPolicy:     cleanupPolicy,
+		MinInsyncReplicas: minInsyncReplicas,
+		RetentionBytes:    retentionBytes,
+		SegmentMs:         segmentMs,
 	}
+
+	resp, err := client.UpdateTopic(t)
+	if err != nil {
+		log.Printf("[DEBUG] Error Response %v", err)
+	}
+
+	return checkResponse(d, m, resp, err)
 }
-*/
 
 func resourceKafkaTopicDelete(d *schema.ResourceData, m interface{}) error {
 	a := deleteRequest(d.Id())
