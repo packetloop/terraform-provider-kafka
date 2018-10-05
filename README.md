@@ -26,7 +26,7 @@ Download this provider, pick a version you'd like from releases from
 
 ```bash
 curl -L \
-  https://github.com/packetloop/terraform-provider-kafka/releases/download/v0.1.0/terraform-provider-kafka_v0.1.0_Darwin_x86_64 \
+  https://github.com/packetloop/terraform-provider-kafka/releases/download/v0.1.0/terraform-provider-kafka_v0.1.0_darwin_x86_64 \
   -o ~/.terraform.d/plugins/terraform-provider-kafka_v0.1.0 && \
   chmod +x ~/.terraform.d/plugins/terraform-provider-kafka_v0.1.0
 ```
