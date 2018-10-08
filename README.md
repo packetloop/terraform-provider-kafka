@@ -13,6 +13,17 @@ We couldn't use Confluent's Kafka REST service due to the way we create a Kafka 
 Hence, we build our own REST service https://github.com/packetloop/kafka-admin-service
 with Go bindings https://github.com/packetloop/go-kafkaesque.
 
+## Installing with homebrew
+
+Run the following commands:
+
+```bash
+brew tap packetloop/mayhem git@github.com:packetloop/homebrew-mayhem.git
+brew update
+brew install packetloop/mayhem/terraform-provider-kafka
+```
+
+After installing, you will need to read the `Caveats` output from brew and follow the instructions.
 
 #### [NOTE]
 
