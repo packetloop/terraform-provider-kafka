@@ -26,26 +26,31 @@ Download this provider, pick a version you'd like from releases from
 
 ```bash
 curl -L \
-  https://github.com/packetloop/terraform-provider-kafka/releases/download/v0.1.0/terraform-provider-kafka_v0.1.0_darwin_x86_64 \
-  -o ~/.terraform.d/plugins/terraform-provider-kafka_v0.1.0 && \
-  chmod +x ~/.terraform.d/plugins/terraform-provider-kafka_v0.1.0
+  https://github.com/packetloop/terraform-provider-kafka/releases/download/v2.0.1/terraform-provider-kafka_v2.0.1_darwin_amd64 \
+  -o ~/.terraform.d/plugins/terraform-provider-kafka_v2.0.1 && \
+  chmod +x ~/.terraform.d/plugins/terraform-provider-kafka_v2.0.1
 ```
 
 ```bash
 provider "kafka" {
   host_url     = "http://localhost:8080"
-  version = "~> 0.1.0"
+  version      = "~> 2.0.1"
 }
 
 resource "kafka_topic" "my-topic" {
-  name = "my-topic"
-  partitions = 2
+  name               = "my-topic"
+  partitions         = 2
   replication_factor = 1
-  retention_ms = 300000
-  cleanup_policy = "compact"
-  segment_ms = 1440000
-  segment_bytes = 1073741824
+  retention_ms       = 300000
+  cleanup_policy     = "compact"
+  segment_ms         = 1440000
+  segment_bytes      = 1073741824
 }
+```
+
+## To create a release:
+```bash
+$ make create-tag TAG=0.1.0
 ```
 
 ## Development and testing:
