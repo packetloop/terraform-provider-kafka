@@ -44,7 +44,7 @@ brew:
 
   # Template for the url.
   # Default is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-  url_template: "http://github.mycompany.com/foo/bar/releases/{{ .Tag }}/{{ .ArtifactName }}"
+  url_template: "https://github.com/packetloop/terraform-provider-kafka/releases/tag/v{{ .Tag }}/{{ .ArtifactName }}"
 
   # Allows you to set a custom download strategy.
   # Default is empty.
@@ -53,8 +53,8 @@ brew:
   # Git author used to commit to the repository.
   # Defaults are shown.
   commit_author:
-    name: goreleaserbot
-    email: goreleaser@carlosbecker.com
+    name: Arbor Networks
+    email: mayhem@arbor.net
 
   # Folder inside the repository to put the formula.
   # Default is the root folder.
@@ -66,11 +66,11 @@ brew:
 
   # Your app's homepage.
   # Default is empty.
-  homepage: "https://example.com/"
+  homepage: "https://github.com/packetloop/terraform-provider-kafka"
 
   # Your app's description.
   # Default is empty.
-  description: "Software to create fast and easy drum rolls."
+  description: "Terraform provider for Kafka"
 
   # Setting this will prevent goreleaser to actually try to commit the updated
   # formula - instead, the formula file will be stored on the dist folder only,
@@ -86,7 +86,6 @@ brew:
   # Packages that conflict with your package.
   conflicts:
     - svn
-    - bash
 
   # Specify for packages that run as a service.
   # Default is empty.

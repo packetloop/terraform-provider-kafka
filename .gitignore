@@ -5,3 +5,5 @@ terraform-provider-kafka
 terraform.tfstate
 .vscode
 terraform.tfstate.backup
+
+/dist
