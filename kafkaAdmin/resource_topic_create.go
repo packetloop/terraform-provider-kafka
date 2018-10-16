@@ -49,7 +49,7 @@ func resourceKafkaTopic() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Description:  "the clean up policy for the topic. Either delete or compact",
-				Default:      "compact",
+				Default:      "delete",
 				ValidateFunc: validateCleanupPolicy,
 			},
 			"segment_bytes": &schema.Schema{
