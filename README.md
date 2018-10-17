@@ -31,6 +31,14 @@ curl -L \
   chmod +x ~/.terraform.d/plugins/terraform-provider-kafka_v2.0.1
 ```
 
+Or installing with homebrew
+
+```bash
+brew tap packetloop/mayhem git@github.com:packetloop/homebrew-mayhem.git
+brew update
+brew install packetloop/mayhem/terraform-provider-kafka
+```
+
 ```bash
 provider "kafka" {
   host_url     = "http://localhost:8080"
