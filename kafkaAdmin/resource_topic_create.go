@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
-	kafka "github.com/packetloop/go-kafkaesque"
+	kafka "github.com/arbor/go-kafkaesque"
 )
 
 func resourceKafkaTopic() *schema.Resource {
