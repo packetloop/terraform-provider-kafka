@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	kafka "github.com/packetloop/go-kafkaesque"
+	kafka "github.com/arbor/go-kafkaesque"
 )
 
 func TestAccKafkaAdminTopicCreate(t *testing.T) {
