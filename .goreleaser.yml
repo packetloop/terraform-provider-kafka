@@ -20,7 +20,12 @@ builds:
     - goos: linux
       goarch: arm
       goarm: 7
-archive:
+archives:
+- replacements:
+    darwin: Darwin
+    linux: Linux
+    windows: Windows
+    amd64: x86_64
   name_template: "{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}"
   format: binary
 checksum:
@@ -35,9 +40,7 @@ changelog:
     - '^test:'
 release:
   name_template: "{{ .ProjectName }}_v{{ .Version }}"
-
-# .goreleaser.yml
-brew:
+brews:
   # Name template of the recipe
   # Default to project name
   name: terraform-provider-kafka
