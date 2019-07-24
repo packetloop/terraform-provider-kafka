@@ -28,9 +28,9 @@ Compatibility: for Terraform v0.12
 
 ```bash
 curl -L \
-  https://github.com/packetloop/terraform-provider-kafka/releases/download/v2.0.1/terraform-provider-kafka_v3.0.1_darwin_amd64 \
-  -o ~/.terraform.d/plugins/terraform-provider-kafka_v3.0.1 && \
-  chmod +x ~/.terraform.d/plugins/terraform-provider-kafka_v3.0.1
+  https://github.com/packetloop/terraform-provider-kafka/releases/download/v2.0.0/terraform-provider-kafka_v3.0.1_darwin_amd64 \
+  -o ~/.terraform.d/plugins/terraform-provider-kafka_v3.0.0 && \
+  chmod +x ~/.terraform.d/plugins/terraform-provider-kafka_v3.0.0
 ```
 
 Compatibility: for Terraform v0.11
@@ -53,7 +53,7 @@ brew install packetloop/mayhem/terraform-provider-kafka
 ```bash
 provider "kafka" {
   host_url     = "http://localhost:8080"
-  version      = "~> 3.0.1"
+  version      = "~> 3.0"
 }
 
 resource "kafka_topic" "my-topic" {
