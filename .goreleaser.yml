@@ -47,7 +47,7 @@ brews:
 
   # Repository to push the tap to.
   github:
-    owner: user
+    owner: packetloop
     name: homebrew-tap
 
   # Template for the url.
