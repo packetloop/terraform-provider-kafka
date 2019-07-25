@@ -48,7 +48,7 @@ brews:
       name: homebrew-tap
     folder: Formula
     homepage: "https://github.com/packetloop/terraform-provider-kafka"
-    url_template: "https://github.com/packetloop/terraform-provider-kafka/releases/tag/v{{ .Tag }}/{{ .ArtifactName }}"
+    url_template: "https://github.com/packetloop/terraform-provider-kafka/releases/download/v{{ .Tag }}/{{ .ArtifactName }}"
     download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
     commit_author:
       name: Arbor Networks
