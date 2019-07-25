@@ -27,7 +27,9 @@ archives:
     windows: Windows
     amd64: x86_64
   name_template: "{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-  format: binary
+  format_overrides:
+    - goos: windows
+      format: zip
 checksum:
   name_template: 'checksums.txt'
 snapshot:
@@ -49,7 +51,6 @@ brews:
     folder: Formula
     homepage: "https://github.com/packetloop/terraform-provider-kafka"
     url_template: "https://github.com/packetloop/terraform-provider-kafka/releases/v{{ .Tag }}/{{ .ArtifactName }}"
-    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
     commit_author:
       name: Arbor Networks
       email: mayhem@arbor.net
