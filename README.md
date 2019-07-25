@@ -27,10 +27,9 @@ Download this provider, pick a version you'd like from releases from
 Compatibility: for Terraform v0.12
 
 ```bash
-curl -L \
-  https://github.com/packetloop/terraform-provider-kafka/releases/download/v2.0.0/terraform-provider-kafka_v3.0.1_darwin_amd64 \
-  -o ~/.terraform.d/plugins/terraform-provider-kafka_v3.0.0 && \
-  chmod +x ~/.terraform.d/plugins/terraform-provider-kafka_v3.0.0
+mkdir ~/.terraform.d/plugins || true \
+  && curl https://github.com/packetloop/terraform-provider-kafka/releases/download/v3.0.1/terraform-provider-kafka_v3.0.1_darwin_amd64.tar.gz -L | \
+  tar -zxv -C . terraform* && mv terraform-provider-kafka  ~/.terraform.d/plugins/terraform-provider-kafka_v3.0.1
 ```
 
 Compatibility: for Terraform v0.11

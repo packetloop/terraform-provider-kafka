@@ -22,10 +22,6 @@ builds:
       goarm: 7
 archives:
 - replacements:
-    darwin: Darwin
-    linux: Linux
-    windows: Windows
-    amd64: x86_64
   name_template: "{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}"
   format_overrides:
     - goos: windows
