@@ -41,71 +41,32 @@ changelog:
 release:
   name_template: "{{ .ProjectName }}_v{{ .Version }}"
 brews:
-  # Name template of the recipe
-  # Default to project name
-  name: terraform-provider-kafka
-
-  # Repository to push the tap to.
-  github:
-    owner: user
-    name: homebrew-tap
-
-  # Template for the url.
-  # Default is "https://github.com/<repo_owner>/<repo_name>/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
-  url_template: "https://github.com/packetloop/terraform-provider-kafka/releases/tag/v{{ .Tag }}/{{ .ArtifactName }}"
-
-  # Allows you to set a custom download strategy.
-  # Default is empty.
-  download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
-
-  # Git author used to commit to the repository.
-  # Defaults are shown.
-  commit_author:
-    name: Arbor Networks
-    email: mayhem@arbor.net
-
-  # Folder inside the repository to put the formula.
-  # Default is the root folder.
-  folder: Formula
-
-  # Caveats for the user of your binary.
-  # Default is empty.
-  caveats: "How to use this binary"
-
-  # Your app's homepage.
-  # Default is empty.
-  homepage: "https://github.com/packetloop/terraform-provider-kafka"
-
-  # Your app's description.
-  # Default is empty.
-  description: "Terraform provider for Kafka"
-
-  # Setting this will prevent goreleaser to actually try to commit the updated
-  # formula - instead, the formula file will be stored on the dist folder only,
-  # leaving the responsibility of publishing it to the user.
-  # Default is false.
-  skip_upload: true
-
-  # Packages your package depends on.
-  dependencies:
-    - git
-    - zsh
-
-  # Packages that conflict with your package.
-  conflicts:
-    - svn
-
-  # Specify for packages that run as a service.
-  # Default is empty.
-  plist: |
-    <?xml version="1.0" encoding="UTF-8"?>
-
-  # So you can `brew test` your formula.
-  # Default is empty.
-  test: |
-    system "#{bin}/program --version"
-
-  # Custom install script for brew.
-  # Default is 'bin.install "program"'.
-  install: |
-    bin.install "program"
+  -
+    name: terraform-provider-kafka
+    github:
+      owner: packetloop
+      name: homebrew-tap
+    folder: Formula
+    homepage: "https://github.com/packetloop/terraform-provider-kafka"
+    url_template: "https://github.com/packetloop/terraform-provider-kafka/releases/tag/v{{ .Tag }}/{{ .ArtifactName }}"
+    download_strategy: GitHubPrivateRepositoryReleaseDownloadStrategy
+    commit_author:
+      name: Arbor Networks
+      email: mayhem@arbor.net
+    caveats: "How to use this binary"
+    description: "Terraform provider for Kafka"
+    skip_upload: true
+    dependencies:
+      - git
+      - zsh
+    conflicts:
+      - svn
+    plist: |
+      <?xml version="1.0" encoding="UTF-8"?>
+    test: |
+      system "#{bin}/program --version"
+    # Custom install script for brew.
+    # Default is 'bin.install "program"'.
+    install: |
+      bin.install "program"
+  
