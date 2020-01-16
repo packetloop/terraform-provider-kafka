@@ -3,12 +3,12 @@ package = github.com/packetloop/$(PROJECT_NAME)
 
 .PHONY: test
 test: dep env
-	HOST_URL=$(HOST_URL) TF_ACC=$(TF_ACC) go test -race -cover ./...
+	HOST_URL=$(HOST_URL) TF_ACC=$(TF_ACC) go test -race -cover -v ./...
 
 .PHONY: dep
 dep:
 	$(eval GO111MODULE := on)
-	go get github.com/hashicorp/terraform-plugin-sdk@v1.0.0
+	go get github.com/hashicorp/terraform-plugin-sdk@v1.4.1
 	go get github.com/tcnksm/ghr
 	go get github.com/mitchellh/gox
 	go mod tidy
@@ -30,9 +30,9 @@ build-local: dep
 
 .PHONY: create-tag
 create-tag: next-tag
-	 git fetch --tags packetloop
+	 git fetch --tags origin
 	 git tag -a v$(TAG) -m "v$(TAG)"
-	 git push packetloop v$(TAG)
+	 git push origin v$(TAG)
 
 .PHONY: release
 release: dep

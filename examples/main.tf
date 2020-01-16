@@ -1,5 +1,5 @@
-provider "kafkaadmin" {
-  HOST_URL = "http://localhost:8080"
+provider "kafka" {
+  host_url = "http://localhost:8080"
 }
 
 resource "kafka_topic" "foobar" {
